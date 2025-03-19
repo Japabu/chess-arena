@@ -1,0 +1,13 @@
+/* Admin Login styles */
+.admin-login {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+} 

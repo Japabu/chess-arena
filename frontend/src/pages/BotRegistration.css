@@ -1,0 +1,71 @@
+/* Bot Registration styles */
+.registration-form {
+  max-width: 600px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background-color: #1a1a1a;
+  color: inherit;
+}
+
+.form-group textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.secret-container {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 2rem;
+}
+
+.secret-container code {
+  background-color: #2a2a2a;
+  padding: 0.2rem 0.4rem;
+}
+
+.warning {
+  color: #ff9800;
+  margin-bottom: 1rem;
+}
+
+.info-text {
+  margin-bottom: 1rem;
+  color: #8c8c8c;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.secret-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.copy-message {
+  margin-top: 1rem;
+  color: #4caf50;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+} 
