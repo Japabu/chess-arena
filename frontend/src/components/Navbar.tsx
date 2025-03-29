@@ -1,35 +1,15 @@
 import { Component, createSignal, createEffect, Show } from 'solid-js';
 import { A, useNavigate, useLocation } from '@solidjs/router';
 import { AuthStore } from '../services/auth.store';
+import ContextMenu from './ContextMenu';
 
 const Navbar: Component = () => {
-  const [isUserMenuOpen, setIsUserMenuOpen] = createSignal(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     AuthStore.logout();
-    setIsUserMenuOpen(false);
     navigate('/');
   };
-
-  // Close dropdowns when clicking outside
-  const handleClickOutside = (e: MouseEvent) => {
-    if (isUserMenuOpen() && !(e.target as HTMLElement).closest('.user-menu-container')) {
-      setIsUserMenuOpen(false);
-    }
-  };
-
-  createEffect(() => {
-    if (isUserMenuOpen()) {
-      document.addEventListener('click', handleClickOutside);
-    } else {
-      document.removeEventListener('click', handleClickOutside);
-    }
-    
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  });
 
   return (
     <nav class="bg-white dark:bg-gray-800 shadow-md">
@@ -51,26 +31,23 @@ const Navbar: Component = () => {
             </A>
             
             <Show when={!AuthStore.isAuthenticated()} fallback={
-              <div class="relative user-menu-container">
-                <button 
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen())}
-                  class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 transition-colors duration-200"
-                >
-                  <div class="flex items-center">
-                    <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-2">
-                      {AuthStore.userDisplayName().charAt(0).toUpperCase()}
+              <ContextMenu
+                trigger={
+                  <button class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 transition-colors duration-200">
+                    <div class="flex items-center">
+                      <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-2">
+                        {AuthStore.userDisplayName().charAt(0).toUpperCase()}
+                      </div>
+                      <span>{AuthStore.userDisplayName()}</span>
+                      <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                      </svg>
                     </div>
-                    <span>{AuthStore.userDisplayName()}</span>
-                    <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                  </div>
-                </button>
-                
-                {/* User dropdown menu - Improved styling */}
-                <div 
-                  class={`absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 transition-all duration-200 z-10 ${isUserMenuOpen() ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
-                >
+                  </button>
+                }
+                class="transition-all duration-200"
+              >
+                <div>
                   <div class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700">
                     <div class="font-medium">Logged in as</div>
                     <div class="truncate text-indigo-500 dark:text-indigo-400">{AuthStore.userDisplayName()}</div>
@@ -80,7 +57,6 @@ const Navbar: Component = () => {
                     <A 
                       href="/admin/dashboard" 
                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-150"
-                      onClick={() => setIsUserMenuOpen(false)}
                     >
                       <span class="flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -95,7 +71,6 @@ const Navbar: Component = () => {
                   <A 
                     href={`/profile/${AuthStore.authUser()?.id}`}
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-150"
-                    onClick={() => setIsUserMenuOpen(false)}
                   >
                     <span class="flex items-center">
                       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -119,7 +94,7 @@ const Navbar: Component = () => {
                     </span>
                   </button>
                 </div>
-              </div>
+              </ContextMenu>
             }>
               <div class="flex space-x-2">
                 <A 
