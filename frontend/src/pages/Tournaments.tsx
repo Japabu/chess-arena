@@ -4,7 +4,7 @@ import { TournamentService, type Tournament } from '../services/api';
 
 const Tournaments: Component = () => {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = createSignal(
+  const [isAuthenticated] = createSignal(
     localStorage.getItem('token') !== null
   );
 

@@ -22,3 +22,4 @@ DO use tailwind.
 DO use defaults to keep the code small.
 DO use the elvis operator over null checks.
 DO only make rest calls in the frontend through src/services.
+DO use podman instead of docker.

@@ -1,5 +1,4 @@
-import { Component, createSignal, createResource, createEffect, For, Show } from 'solid-js';
-import { useParams } from '@solidjs/router';
+import { Component, createSignal, Show } from 'solid-js';
 
 interface User {
   id: number;
@@ -132,31 +131,13 @@ const mockBracket: TournamentBracket = {
 };
 
 const TournamentDetails: Component = () => {
-  const params = useParams();
-  const tournamentId = params.id;
-  const [socket, setSocket] = createSignal<WebSocket | null>(null);
-
+  // We would normally use params.id to fetch the tournament
+  // const params = useParams();
+  
   // Use mocked data instead of fetching
   const [tournament] = createSignal<Tournament>(mockTournament);
   const [bracket] = createSignal<TournamentBracket>(mockBracket);
-
-  const getStatusColor = (status?: string) => {
-    if (!status) return '';
-    
-    switch (status) {
-      case 'pending':
-        return 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800';
-      case 'in_progress':
-        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800';
-      case 'white_won':
-      case 'black_won':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800';
-      case 'draw':
-        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800';
-      default:
-        return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-800';
-    }
-  };
+  const [isAdmin] = createSignal(true); // Set to true for demo purposes
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'TBD';
@@ -173,8 +154,6 @@ const TournamentDetails: Component = () => {
   const startTournament = async () => {
     alert('Tournament has been started successfully');
   };
-
-  const [isAdmin, setIsAdmin] = createSignal(true); // Set to true for demo purposes
 
   return (
     <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">

@@ -56,13 +56,13 @@ export class Tournament {
   @Column('boolean', { default: false })
   isPublic: boolean = false;
 
-  @Column('datetime', { nullable: true })
+  @Column('timestamp', { nullable: true })
   registrationDeadline?: Date;
 
-  @Column('datetime', { nullable: true })
+  @Column('timestamp', { nullable: true })
   startDate?: Date;
 
-  @Column('datetime', { nullable: true })
+  @Column('timestamp', { nullable: true })
   endDate?: Date;
 
   @ManyToMany(() => User)

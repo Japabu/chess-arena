@@ -1,0 +1,33 @@
+services:
+  chess-arena:
+    build:
+      context: .
+      args:
+        - VITE_API_URL=http://localhost:3000/api
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - FRONTEND_URL=http://localhost:3000
+      - JWT_SECRET=secret
+      - NODE_ENV=development
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=chess_arena
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=chess_arena
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

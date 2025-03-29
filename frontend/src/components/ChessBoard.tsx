@@ -9,7 +9,7 @@ interface ChessBoardProps {
 
 const ChessBoard: Component<ChessBoardProps> = (props) => {
   const [position, setPosition] = createSignal<Chess>();
-  const [boardSize, setBoardSize] = createSignal(props.size || 400);
+  const [boardSize] = createSignal(props.size || 400);
   const squareSize = () => boardSize() / 8;
   
   // Initialize chess position from FEN

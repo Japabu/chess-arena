@@ -1,14 +1,9 @@
-import { Component, createSignal, createEffect } from 'solid-js';
+import { Component, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { UserService } from '../../services/api';
 
 const Dashboard: Component = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = createSignal({
-    users: 0,
-    matches: 0,
-    tournaments: 0,
-  });
 
   createEffect(() => {
     if (!UserService.isAdmin()) {

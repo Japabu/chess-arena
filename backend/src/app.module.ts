@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { WebSocketModule } from './websocket/websocket.module';
 import { MatchModule } from './match/match.module';
 import { UserModule } from './user/user.module';
@@ -10,6 +12,7 @@ import { TournamentModule } from './tournament/tournament.module';
 import { Match } from './match/match.entity';
 import { User } from './user/user.entity';
 import { Tournament } from './tournament/tournament.entity';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -22,11 +25,19 @@ import { Tournament } from './tournament/tournament.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: configService.getOrThrow<'sqlite'>('DB_TYPE'),
+        type: 'postgres',
+        host: configService.getOrThrow<string>('DB_HOST'),
+        port: configService.getOrThrow<number>('DB_PORT'),
+        username: configService.getOrThrow<string>('DB_USERNAME'),
+        password: configService.getOrThrow<string>('DB_PASSWORD'),
         database: configService.getOrThrow<string>('DB_NAME'),
         entities: [Match, User, Tournament],
         synchronize: configService.getOrThrow('NODE_ENV') !== 'production',
       }),
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), '../frontend/dist'),
+      exclude: ['/api*'],
     }),
     ScheduleModule.forRoot(),
     WebSocketModule,
@@ -34,5 +45,6 @@ import { Tournament } from './tournament/tournament.entity';
     UserModule,
     TournamentModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

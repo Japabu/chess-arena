@@ -21,8 +21,12 @@ const Registration: Component = () => {
     setIsLoading(true);
     
     try {
-      const data = await UserService.register(username(), password());
-      localStorage.setItem('token', data.access_token);
+      // Register the user
+      await UserService.register(username(), password());
+      
+      // Login the user to get the token
+      const loginData = await UserService.login(username(), password());
+      localStorage.setItem('token', loginData.access_token);
       setSuccess(true);
       
       // Auto-redirect after 2 seconds
