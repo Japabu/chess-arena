@@ -1,6 +1,8 @@
 import { Component, createSignal, createEffect, For, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import '../../styles/Admin.css';
+import { UserService, TournamentService } from '../../services/api';
+import type { Tournament as ApiTournament, User as ApiUser } from '../../services/api/types';
 
 interface User {
   id: number;
@@ -28,8 +30,7 @@ const AdminTournaments: Component = () => {
   
   // Check for authentication and fetch tournaments
   createEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
+    if (!UserService.isAdmin()) {
       navigate('/admin/login');
     } else {
       fetchTournaments();
@@ -41,29 +42,29 @@ const AdminTournaments: Component = () => {
     setError('');
     
     try {
-      const token = localStorage.getItem('admin_token');
+      const apiTournaments = await TournamentService.getAllTournaments();
       
-      const response = await fetch(`http://localhost:3000/tournaments`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // Map API Tournament to our local Tournament interface
+      const mappedTournaments = apiTournaments.map((apiTournament: ApiTournament) => ({
+        id: apiTournament.id,
+        name: apiTournament.name,
+        description: apiTournament.description,
+        status: apiTournament.status,
+        format: apiTournament.format,
+        maxParticipants: apiTournament.maxParticipants,
+        participants: apiTournament.participants.map((participant: ApiUser) => ({
+          id: participant.id,
+          username: participant.name
+        })),
+        createdAt: apiTournament.createdAt
+      }));
       
-      if (response.status === 401) {
-        localStorage.removeItem('admin_token');
-        navigate('/admin/login');
-        return;
-      }
-      
-      const data = await response.json();
-      
-      if (!Array.isArray(data)) {
-        throw new Error('Failed to fetch tournaments');
-      }
-      
-      setTournaments(data);
+      setTournaments(mappedTournaments);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof Error && err.message.includes('Unauthorized')) {
+        navigate('/admin/login');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -78,25 +79,7 @@ const AdminTournaments: Component = () => {
     setDeleteSuccess('');
     
     try {
-      const token = localStorage.getItem('admin_token');
-      
-      const response = await fetch(`http://localhost:3000/tournaments/${tournamentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (response.status === 401) {
-        localStorage.removeItem('admin_token');
-        navigate('/admin/login');
-        return;
-      }
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete tournament');
-      }
+      await TournamentService.deleteTournament(tournamentId);
       
       // Remove the tournament from the list
       setTournaments(prev => prev.filter(t => t.id !== tournamentId));
@@ -109,6 +92,9 @@ const AdminTournaments: Component = () => {
       }, 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof Error && err.message.includes('Unauthorized')) {
+        navigate('/admin/login');
+      }
     }
   };
   
@@ -117,27 +103,7 @@ const AdminTournaments: Component = () => {
     setActionSuccess('');
     
     try {
-      const token = localStorage.getItem('admin_token');
-      
-      const response = await fetch(`http://localhost:3000/tournaments/${tournamentId}/start`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.status === 401) {
-        localStorage.removeItem('admin_token');
-        navigate('/admin/login');
-        return;
-      }
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to start tournament');
-      }
+      await TournamentService.startTournament(tournamentId);
       
       // Refresh the tournaments list
       await fetchTournaments();
@@ -149,6 +115,9 @@ const AdminTournaments: Component = () => {
       }, 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof Error && err.message.includes('Unauthorized')) {
+        navigate('/admin/login');
+      }
     }
   };
   

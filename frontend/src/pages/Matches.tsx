@@ -4,6 +4,7 @@ import './Matches.css';
 import { io, Socket } from 'socket.io-client';
 import { Chess } from 'chess.js';
 import { createStore, produce } from 'solid-js/store';
+import { MatchService, API_URL } from '../services/api';
 
 enum MatchStatus {
   PENDING = 'pending',
@@ -35,8 +36,6 @@ interface GameStateUpdate {
   move?: string;
 }
 
-const apiUrl = 'http://localhost:3000';
-
 function emitAsync<T>(socket: Socket, event: string, ...args: any[]): Promise<T> {
   return new Promise((resolve, reject) => {
     if (!socket) {
@@ -63,7 +62,7 @@ const Matches: Component = () => {
   onMount(async () => {    
     await fetchInitialData();
     
-    const socketInstance = io(apiUrl);
+    const socketInstance = io(API_URL);
     setSocket(socketInstance);
     
     socketInstance.on('connect', async () => {
@@ -141,28 +140,25 @@ const Matches: Component = () => {
     try {
       setIsLoading(true);
       
-      const response = await fetch(`${apiUrl}/match`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch matches');
-      }
-      
-      const data = await response.json();
+      const data = await MatchService.getAllMatches();
 
       const matches: { [key: number]: Match } = {};
       for (const match of data) {
-        matches[match.id] = {
-          id: match.id,
-          black: match.black,
-          fen: match.fen,
-          createdAt: match.createdAt,
-          status: match.status,
-          white: match.white
+        // TournamentMatch doesn't have all Match properties, so we need to add defaults
+        const matchId = match.matchId || 0;
+        matches[matchId] = {
+          id: matchId,
+          black: {
+            id: match.player2?.id || 0,
+            username: match.player2?.name || 'Unknown'
+          },
+          white: {
+            id: match.player1?.id || 0,
+            username: match.player1?.name || 'Unknown'
+          },
+          fen: (match as any).fen || '',  // Not in TournamentMatch type, cast as any
+          createdAt: (match as any).createdAt || new Date().toISOString(),  // Not in TournamentMatch type, cast as any
+          status: (match.status as MatchStatus) || MatchStatus.PENDING
         };
       }
       
@@ -273,7 +269,7 @@ const Matches: Component = () => {
       </Show>
       
       <Show when={isLoading()}>
-        <p>Loading matches...</p>
+        <p class="text-gray-200 dark:text-gray-200">Loading matches...</p>
       </Show>
       
       <Show when={error()}>
@@ -283,7 +279,7 @@ const Matches: Component = () => {
       <h2>Active Matches</h2>
       
       <Show when={!isLoading() && !error() && getActiveMatches().length === 0}>
-        <p>No matches are currently active.</p>
+        <p class="text-gray-200 dark:text-gray-200 py-4">No matches are currently active.</p>
       </Show>
       
       <div class="matches-grid">
@@ -305,7 +301,7 @@ const Matches: Component = () => {
       </div>
       
       <Show when={!isLoading() && !error() && getMatchHistory().length === 0}>
-        <p>No completed matches found.</p>
+        <p class="text-gray-200 dark:text-gray-200 py-4">No completed matches found.</p>
       </Show>
       
       <div class="matches-grid">

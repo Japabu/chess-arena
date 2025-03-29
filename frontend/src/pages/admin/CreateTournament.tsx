@@ -1,6 +1,7 @@
 import { Component, createSignal, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import '../../styles/Admin.css';
+import { UserService, TournamentService } from '../../services/api';
 
 const CreateTournament: Component = () => {
   const [tournamentName, setTournamentName] = createSignal('');
@@ -13,8 +14,7 @@ const CreateTournament: Component = () => {
   
   // Check for authentication
   createEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
+    if (!UserService.isAdmin()) {
       navigate('/admin/login');
     }
   });
@@ -31,8 +31,6 @@ const CreateTournament: Component = () => {
     setIsCreating(true);
     
     try {
-      const token = localStorage.getItem('admin_token');
-      
       // Create tournament payload
       const tournamentData = {
         name: tournamentName(),
@@ -44,51 +42,16 @@ const CreateTournament: Component = () => {
       
       console.log('Sending tournament creation request:', tournamentData);
       
-      const response = await fetch(`http://localhost:3000/tournaments`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(tournamentData),
-      });
-      
-      // Get response text to help with debugging
-      const responseText = await response.text();
-      let errorMessage = 'Failed to create tournament';
-      
-      try {
-        // Try to parse as JSON if possible
-        const data = JSON.parse(responseText);
-        if (data.message) {
-          errorMessage = data.message;
-        }
-      } catch (e) {
-        // If not JSON, use text as error message
-        if (responseText) {
-          errorMessage = responseText;
-        }
-      }
-      
-      if (response.status === 401) {
-        localStorage.removeItem('admin_token');
-        navigate('/admin/login');
-        return;
-      }
-      
-      if (response.status === 403) {
-        throw new Error('Permission denied: Your account does not have permission to create tournaments. Please contact the system administrator.');
-      }
-      
-      if (!response.ok) {
-        throw new Error(errorMessage);
-      }
+      await TournamentService.createTournament(tournamentData);
       
       // Navigate back to tournaments list
       navigate('/admin/tournaments');
     } catch (err) {
       console.error('Tournament creation error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof Error && err.message.includes('Unauthorized')) {
+        navigate('/admin/login');
+      }
     } finally {
       setIsCreating(false);
     }

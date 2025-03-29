@@ -1,13 +1,26 @@
-import { Component, createSignal } from 'solid-js';
+import { Component, createSignal, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
+import { UserService } from '../services';
 import './AdminLogin.css';
 
-const AdminLogin: Component = () => {
+const Login: Component = () => {
   const [username, setUsername] = createSignal('');
   const [password, setPassword] = createSignal('');
-  const [error, setError] = createSignal('');
   const [isLoading, setIsLoading] = createSignal(false);
+  const [error, setError] = createSignal('');
   const navigate = useNavigate();
+  
+  // Redirect if already logged in
+  createEffect(() => {
+    if (localStorage.getItem('token')) {
+      const claims = UserService.getUserClaims();
+      if (claims?.roles?.includes('admin')) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
+    }
+  });
   
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
@@ -15,42 +28,22 @@ const AdminLogin: Component = () => {
     setError('');
     
     try {
-      const response = await fetch(`http://localhost:3000/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username(),
-          password: password(),
-        }),
-      });
+      const data = await UserService.login(username(), password());
+      localStorage.setItem('token', data.access_token);
       
-      const data = await response.json();
+      // Notify the app that auth state has changed
+      window.dispatchEvent(new CustomEvent('auth-state-changed'));
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to login');
+      // Redirect based on user role
+      const claims = UserService.getUserClaims();
+      if (claims?.roles?.includes('admin')) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
       }
-      
-      // Store the token in localStorage
-      localStorage.setItem('admin_token', data.access_token);
-      
-      // Check if user has admin privileges by trying to access admin-only endpoint
-      const adminCheckResponse = await fetch(`http://localhost:3000/auth/users`, {
-        headers: {
-          'Authorization': `Bearer ${data.access_token}`,
-        },
-      });
-      
-      if (adminCheckResponse.status === 403) {
-        localStorage.removeItem('admin_token');
-        throw new Error('You do not have administrator privileges');
-      }
-      
-      // Navigate to admin dashboard
-      navigate('/admin/dashboard');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (error) {
+      console.error('Login failed:', error);
+      setError('Invalid username or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -58,13 +51,17 @@ const AdminLogin: Component = () => {
 
   return (
     <div class="admin-login">
-      <h1>Admin Login</h1>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Login</h1>
       
-      {error() && <div class="error-message">{error()}</div>}
+      {error() && (
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error()}
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} class="login-form">
         <div class="form-group">
-          <label for="username">Username</label>
+          <label for="username" class="text-gray-800 dark:text-gray-200 font-medium">Username</label>
           <input
             type="text"
             id="username"
@@ -72,11 +69,12 @@ const AdminLogin: Component = () => {
             onInput={(e) => setUsername(e.currentTarget.value)}
             required
             disabled={isLoading()}
+            class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm"
           />
         </div>
         
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password" class="text-gray-800 dark:text-gray-200 font-medium">Password</label>
           <input
             type="password"
             id="password"
@@ -84,10 +82,11 @@ const AdminLogin: Component = () => {
             onInput={(e) => setPassword(e.currentTarget.value)}
             required
             disabled={isLoading()}
+            class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm"
           />
         </div>
         
-        <button type="submit" class="button" disabled={isLoading()}>
+        <button type="submit" class="w-full mt-4 px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" disabled={isLoading()}>
           {isLoading() ? 'Logging in...' : 'Login'}
         </button>
       </form>
@@ -95,4 +94,4 @@ const AdminLogin: Component = () => {
   );
 };
 
-export default AdminLogin; 
+export default Login; 

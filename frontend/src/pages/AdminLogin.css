@@ -3,6 +3,11 @@
   max-width: 500px;
   margin: 2rem auto;
   padding: 2rem;
+  background-color: #1e2335;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: #e6e6e6;
+  border: 1px solid #4a5568;
 }
 
 .login-form {

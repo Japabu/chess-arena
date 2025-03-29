@@ -25,8 +25,8 @@ import { AuthGuard } from './jwt.guard';
 import { User } from './user.entity';
 import { GetUsersResponse } from './dto/get-users-response.dto';
 
-@ApiTags('auth')
-@Controller('auth')
+@ApiTags('user')
+@Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
@@ -70,7 +70,7 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard(['admin']))
-  @Get('users')
+  @Get()
   @ApiOperation({ summary: 'Get all users (admin view)' })
   @ApiResponse({
     status: 200,
@@ -82,7 +82,7 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard(['admin']))
-  @Delete('users/:id')
+  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a user' })
   @ApiParam({

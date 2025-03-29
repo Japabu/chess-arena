@@ -1,6 +1,0 @@
----
-description: 
-globs: 
-alwaysApply: true
----
-code must not contain any fallbacks, legacy code, redundancy instead fail fast and return early

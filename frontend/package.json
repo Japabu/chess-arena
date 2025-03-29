@@ -14,10 +14,12 @@
     "@types/chess.js": "^0.13.7",
     "chess.js": "^1.1.0",
     "socket.io-client": "^4.8.1",
-    "solid-js": "^1.9.5",
-    "tailwindcss": "^4.0.17"
+    "solid-js": "^1.9.5"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.17",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.17",
     "typescript": "~5.7.2",
     "vite": "^6.2.0",
     "vite-plugin-solid": "^2.11.2"

@@ -1,5 +1,6 @@
 import { Component, createSignal, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
+import { UserService, MatchService, TournamentService } from '../../services/api';
 import '../../styles/Admin.css';
 
 interface Stats {
@@ -24,9 +25,8 @@ const AdminDashboard: Component = () => {
   
   // Check for authentication and fetch stats
   createEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
-      navigate('/admin/login');
+    if (!UserService.isAdmin()) {
+      navigate('/login');
     } else {
       fetchStats();
     }
@@ -37,34 +37,14 @@ const AdminDashboard: Component = () => {
     setError('');
     
     try {
-      const token = localStorage.getItem('admin_token');
-      
       // Fetch users count
-      const usersResponse = await fetch(`http://localhost:3000/auth/users`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      
-      if (usersResponse.status === 401) {
-        localStorage.removeItem('admin_token');
-        navigate('/admin/login');
-        return;
-      }
-      
-      const usersData = await usersResponse.json();
+      const usersData = await UserService.getAllUsers();
       
       // Fetch matches
-      const matchesResponse = await fetch(`http://localhost:3000/match`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      
-      const matchesData = await matchesResponse.json();
+      const matchesData = await MatchService.getAllMatches();
       
       // Fetch tournaments
-      const tournamentsResponse = await fetch(`http://localhost:3000/tournaments`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      
-      const tournamentsData = await tournamentsResponse.json();
+      const tournamentsData = await TournamentService.getAllTournaments();
       
       // Calculate stats
       setStats({
@@ -77,6 +57,9 @@ const AdminDashboard: Component = () => {
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof Error && err.message.includes('Unauthorized')) {
+        navigate('/login');
+      }
     } finally {
       setIsLoading(false);
     }

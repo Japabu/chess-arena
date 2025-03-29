@@ -1,6 +1,8 @@
 import { Component, createSignal, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import '../../styles/Admin.css';
+import { UserService, MatchService } from '../../services/api';
+import type { User as ApiUser } from '../../services/api/types';
 
 interface User {
   id: number;
@@ -19,8 +21,7 @@ const CreateMatch: Component = () => {
   
   // Check for authentication and fetch users
   createEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
+    if (!UserService.isAdmin()) {
       navigate('/admin/login');
     } else {
       fetchUsers();
@@ -32,29 +33,18 @@ const CreateMatch: Component = () => {
     setError('');
     
     try {
-      const token = localStorage.getItem('admin_token');
+      const userData = await UserService.getAllUsers();
       
-      const response = await fetch(`http://localhost:3000/auth/users`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (response.status === 401) {
-        localStorage.removeItem('admin_token');
-        navigate('/admin/login');
-        return;
-      }
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch users');
-      }
-      
-      setUsers(data);
+      // Map API users to our local User interface
+      setUsers(userData.map(apiUser => ({
+        id: apiUser.id,
+        username: apiUser.name
+      })));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof Error && err.message.includes('Unauthorized')) {
+        navigate('/admin/login');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -91,42 +81,24 @@ const CreateMatch: Component = () => {
     setIsCreating(true);
     
     try {
-      const token = localStorage.getItem('admin_token');
-      
       const matchData: any = {
-        white: { id: selectedWhiteId() },
-        black: { id: selectedBlackId() }
+        player1: { id: selectedWhiteId() },
+        player2: { id: selectedBlackId() }
       };
       
       if (customFen()) {
         matchData.fen = customFen();
       }
       
-      const response = await fetch(`http://localhost:3000/match`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(matchData),
-      });
-      
-      if (response.status === 401) {
-        localStorage.removeItem('admin_token');
-        navigate('/admin/login');
-        return;
-      }
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create match');
-      }
+      await MatchService.createMatch(matchData);
       
       // Navigate to the matches page
       navigate('/admin/matches');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof Error && err.message.includes('Unauthorized')) {
+        navigate('/admin/login');
+      }
     } finally {
       setIsCreating(false);
     }

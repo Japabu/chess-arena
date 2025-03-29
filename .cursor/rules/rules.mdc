@@ -1,0 +1,17 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+DONT keep legacy code.
+DONT create fallbacks.
+DONT add redundancy.
+DONT add comments.
+DONT try to run the app unless told.
+DONT do error handling.
+
+DO make the code readable. if it requires comments to understand its not readable.
+DO fail fast and return early.
+DO keep it simple, prefer maintainable solutions.
+DO look for already existing features before adding new
+DO try to remove more code than you generate

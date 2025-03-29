@@ -1,141 +1,106 @@
 @import "tailwindcss";
 
-@layer base {
-  body {
-    @apply bg-primary-bg text-primary-text min-h-screen min-w-[320px];
-    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    font-weight: 400;
-    color-scheme: dark;
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply text-primary-text leading-tight mb-md;
-  }
-
-  h1 {
-    @apply text-[2.5rem] leading-[1.1];
-  }
-
-  h2 {
-    @apply text-[2rem];
-  }
-
-  h3 {
-    @apply text-[1.5rem];
-  }
-
-  p {
-    @apply mb-md;
-  }
-
-  a {
-    @apply font-medium text-accent-primary no-underline;
-  }
-
-  a:hover {
-    @apply text-accent-primary-hover;
-  }
-
-  button {
-    @apply rounded-sm border border-transparent py-sm px-md text-base font-medium font-inherit
-           bg-tertiary-bg text-primary-text cursor-pointer transition-colors;
-  }
-
-  button:hover {
-    @apply border-accent-primary bg-elevated-bg;
-  }
-
-  button:focus,
-  button:focus-visible {
-    @apply outline outline-4 outline-accent-primary;
-  }
-
-  input, textarea, select {
-    @apply py-sm px-md rounded-sm border border-border bg-secondary-bg text-primary-text 
-           font-inherit text-base;
-  }
+/* 
+ * Theme configuration based on Tailwind CSS v4 
+ * See: https://tailwindcss.com/docs/theme
+ */
+@theme {
+  /* Colors - Using OKLCH for better color representation */
+  --color-white: oklch(1 0 0);
+  --color-black: oklch(0.15 0 0); /* Darker black */
+  
+  /* Gray Scale - Increased contrast between steps */
+  --color-gray-50: oklch(0.98 0.01 var(--gray-hue));
+  --color-gray-100: oklch(0.95 0.02 var(--gray-hue));
+  --color-gray-200: oklch(0.9 0.025 var(--gray-hue));
+  --color-gray-300: oklch(0.85 0.03 var(--gray-hue));
+  --color-gray-400: oklch(0.78 0.035 var(--gray-hue));
+  --color-gray-500: oklch(0.68 0.035 var(--gray-hue));
+  --color-gray-600: oklch(0.57 0.03 var(--gray-hue));
+  --color-gray-700: oklch(0.47 0.025 var(--gray-hue));
+  --color-gray-800: oklch(0.35 0.02 var(--gray-hue));
+  --color-gray-900: oklch(0.25 0.015 var(--gray-hue));
+  --color-gray-950: oklch(0.18 0.01 var(--gray-hue));
+  --gray-hue: 262;
+  
+  /* Indigo - More vibrant with higher contrast */
+  --color-indigo-50: oklch(0.97 0.035 272);
+  --color-indigo-100: oklch(0.93 0.06 270);
+  --color-indigo-200: oklch(0.88 0.09 270);
+  --color-indigo-300: oklch(0.83 0.13 270);
+  --color-indigo-400: oklch(0.77 0.16 270);
+  --color-indigo-500: oklch(0.7 0.19 270); /* Increased chroma */
+  --color-indigo-600: oklch(0.63 0.185 270);
+  --color-indigo-700: oklch(0.56 0.16 270);
+  --color-indigo-800: oklch(0.47 0.13 270);
+  --color-indigo-900: oklch(0.4 0.11 270);
+  --color-indigo-950: oklch(0.3 0.09 270);
+  
+  /* Amber - Increased saturation for better contrast */
+  --color-amber-50: oklch(0.97 0.06 83.4);
+  --color-amber-100: oklch(0.95 0.09 83.8);
+  --color-amber-200: oklch(0.93 0.12 84.5);  
+  --color-amber-300: oklch(0.90 0.15 85);
+  --color-amber-400: oklch(0.87 0.18 85.5);
+  --color-amber-500: oklch(0.83 0.195 85.5); /* More vibrant */
+  --color-amber-600: oklch(0.77 0.19 85.1);
+  --color-amber-700: oklch(0.7 0.18 83.5);
+  --color-amber-800: oklch(0.62 0.16 80.5);
+  --color-amber-900: oklch(0.55 0.13 78);
+  --color-amber-950: oklch(0.42 0.11 75);
+  
+  /* Red - More vibrant for better alerts and errors */
+  --color-red-50: oklch(0.97 0.035 29);
+  --color-red-100: oklch(0.94 0.06 29);
+  --color-red-200: oklch(0.9 0.1 28);
+  --color-red-300: oklch(0.85 0.145 27);
+  --color-red-400: oklch(0.78 0.185 25);
+  --color-red-500: oklch(0.7 0.22 25); /* Increased chroma */
+  --color-red-600: oklch(0.63 0.2 25);
+  --color-red-700: oklch(0.56 0.18 24);
+  --color-red-800: oklch(0.48 0.15 22);
+  --color-red-900: oklch(0.4 0.12 20);
+  --color-red-950: oklch(0.33 0.1 18);
+  
+  /* Green - More vibrant for better status indicators */
+  --color-green-50: oklch(0.97 0.045 143);
+  --color-green-100: oklch(0.94 0.07 142);
+  --color-green-200: oklch(0.9 0.1 141);
+  --color-green-300: oklch(0.84 0.14 140);
+  --color-green-400: oklch(0.76 0.175 139);
+  --color-green-500: oklch(0.69 0.2 138); /* Increased chroma */
+  --color-green-600: oklch(0.62 0.18 137);
+  --color-green-700: oklch(0.53 0.16 136);
+  --color-green-800: oklch(0.45 0.13 135);
+  --color-green-900: oklch(0.37 0.11 134);
+  --color-green-950: oklch(0.28 0.09 133);
+  
+  /* Typography */
+  --font-display: system-ui, sans-serif;
+  --font-body: system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  
+  /* Spacing */
+  --spacing: 0.25rem;
+  
+  /* Radius */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-duration: 200ms;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
 }
 
-@layer components {
-  .app-container {
-    @apply min-h-screen flex flex-col bg-primary-bg text-primary-text;
-  }
-
-  .main-content {
-    @apply flex-1 px-xl max-w-[1200px] mx-auto w-full;
-  }
-
-  .button {
-    @apply inline-block py-sm px-md bg-tertiary-bg text-primary-text border border-transparent
-           rounded-sm text-base font-medium font-inherit cursor-pointer transition-colors;
-  }
-
-  .button:hover {
-    @apply bg-elevated-bg border-accent-primary;
-  }
-
-  .button.primary {
-    @apply bg-accent-primary text-white;
-  }
-
-  .button.primary:hover {
-    @apply bg-accent-primary-hover;
-  }
-
-  .card {
-    @apply bg-secondary-bg rounded-lg p-lg shadow-md mb-lg;
-  }
-
-  .status-badge {
-    @apply inline-block py-xs px-sm rounded-round text-sm font-semibold uppercase;
-  }
-
-  .status-badge.pending {
-    @apply bg-[#1a3a6c] text-accent-primary;
-  }
-
-  .status-badge.in-progress {
-    @apply bg-[#1b3e2c] text-accent-secondary;
-  }
-
-  .status-badge.completed {
-    @apply bg-[#14373a] text-[#80cbc4];
-  }
-
-  .status-badge.cancelled {
-    @apply bg-[#3e1c26] text-[#ef9a9a];
-  }
-
-  .error-message {
-    @apply bg-[#3e1c26] border border-[#ef9a9a] text-[#ef9a9a] rounded-sm p-md mb-lg;
-  }
-
-  .loading-spinner {
-    @apply flex justify-center items-center min-h-[200px] text-secondary-text;
-  }
-}
-
-@layer utilities {
-  .text-center { @apply text-center; }
-  .text-left { @apply text-left; }
-  .text-right { @apply text-right; }
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    @apply px-md;
-  }
-
-  h1 {
-    @apply text-[2rem];
-  }
-
-  h2 {
-    @apply text-[1.75rem];
-  }
-}
+/* Import custom utilities and components */
+@import "./styles/theme.css";

@@ -10,8 +10,10 @@ const AdminDashboard: Component = () => {
   });
   
   return (
-    <div>
-      Redirecting to new admin dashboard...
+    <div class="flex justify-center items-center h-40">
+      <p class="text-gray-700 dark:text-gray-200 text-lg">
+        Redirecting to new admin dashboard...
+      </p>
     </div>
   );
 };

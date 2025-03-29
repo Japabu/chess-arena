@@ -15,15 +15,16 @@
 
 .form-group label {
   font-weight: 500;
+  color: #e6e6e6;
 }
 
 .form-group input,
 .form-group textarea {
   padding: 0.5rem;
   border-radius: 4px;
-  border: 1px solid #333;
-  background-color: #1a1a1a;
-  color: inherit;
+  border: 1px solid #4a5568;
+  background-color: #2c3e50;
+  color: #e6e6e6;
 }
 
 .form-group textarea {
@@ -32,26 +33,30 @@
 }
 
 .secret-container {
-  background-color: #1a1a1a;
-  border: 1px solid #333;
+  background-color: #1e2335;
+  border: 1px solid #4a5568;
   border-radius: 8px;
   padding: 1rem;
   margin-top: 2rem;
+  color: #e6e6e6;
 }
 
 .secret-container code {
-  background-color: #2a2a2a;
+  background-color: #2c3e50;
   padding: 0.2rem 0.4rem;
+  color: #f1c40f;
+  border-radius: 3px;
 }
 
 .warning {
-  color: #ff9800;
+  color: #f39c12;
   margin-bottom: 1rem;
+  font-weight: 500;
 }
 
 .info-text {
   margin-bottom: 1rem;
-  color: #8c8c8c;
+  color: #a0aec0;
   font-size: 0.9rem;
   line-height: 1.4;
 }
@@ -64,7 +69,7 @@
 
 .copy-message {
   margin-top: 1rem;
-  color: #4caf50;
+  color: #2ecc71;
   font-size: 0.9rem;
   opacity: 0;
   transition: opacity 0.3s;
