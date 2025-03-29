@@ -158,9 +158,25 @@ const TournamentDetails: Component = () => {
     }
   };
 
-  const [isAdmin, setIsAdmin] = createSignal(
-    localStorage.getItem('isAdmin') === 'true'
-  );
+  const [isAdmin, setIsAdmin] = createSignal(false);
+
+  // Check for admin role in the JWT token
+  createEffect(() => {
+    const token = localStorage.getItem('admin_token');
+    if (token) {
+      try {
+        // Parse the JWT token (which is in format: header.payload.signature)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        // Check if roles includes 'admin'
+        setIsAdmin(payload.roles && payload.roles.includes('admin'));
+      } catch (e) {
+        console.error('Error parsing JWT token:', e);
+        setIsAdmin(false);
+      }
+    } else {
+      setIsAdmin(false);
+    }
+  });
 
   return (
     <div class="tournament-details-container">

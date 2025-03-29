@@ -33,20 +33,42 @@ const CreateTournament: Component = () => {
     try {
       const token = localStorage.getItem('admin_token');
       
+      // Create tournament payload
+      const tournamentData = {
+        name: tournamentName(),
+        description: tournamentDescription(),
+        format: tournamentFormat(),
+        maxParticipants: maxParticipants(),
+        status: 'registration',
+      };
+      
+      console.log('Sending tournament creation request:', tournamentData);
+      
       const response = await fetch(`http://localhost:3000/tournaments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: tournamentName(),
-          description: tournamentDescription(),
-          format: tournamentFormat(),
-          maxParticipants: maxParticipants(),
-          status: 'registration',
-        }),
+        body: JSON.stringify(tournamentData),
       });
+      
+      // Get response text to help with debugging
+      const responseText = await response.text();
+      let errorMessage = 'Failed to create tournament';
+      
+      try {
+        // Try to parse as JSON if possible
+        const data = JSON.parse(responseText);
+        if (data.message) {
+          errorMessage = data.message;
+        }
+      } catch (e) {
+        // If not JSON, use text as error message
+        if (responseText) {
+          errorMessage = responseText;
+        }
+      }
       
       if (response.status === 401) {
         localStorage.removeItem('admin_token');
@@ -54,15 +76,18 @@ const CreateTournament: Component = () => {
         return;
       }
       
-      const data = await response.json();
+      if (response.status === 403) {
+        throw new Error('Permission denied: Your account does not have permission to create tournaments. Please contact the system administrator.');
+      }
       
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create tournament');
+        throw new Error(errorMessage);
       }
       
       // Navigate back to tournaments list
       navigate('/admin/tournaments');
     } catch (err) {
+      console.error('Tournament creation error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsCreating(false);

@@ -22,9 +22,6 @@ export class User {
   @Column('simple-json', { default: '["user"]' })
   roles!: string[];
 
-  @Column({ default: false })
-  isAdmin: boolean = false;
-
   @CreateDateColumn()
   createdAt!: Date;
 
