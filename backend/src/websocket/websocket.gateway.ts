@@ -169,4 +169,18 @@ export class GameWebSocketGateway implements OnGatewayConnection {
       move: event.move,
     });
   }
+
+  @OnEvent('tournament.update')
+  handleTournamentUpdate(event: { tournamentId: number; matchId: number }) {
+    this.server
+      .to(this.getTournamentRoomName(event.tournamentId))
+      .emit('tournament.update', {
+        tournamentId: event.tournamentId,
+        matchId: event.matchId,
+      });
+  }
+
+  private getTournamentRoomName(tournamentId: number): string {
+    return `tournament:${tournamentId}`;
+  }
 }

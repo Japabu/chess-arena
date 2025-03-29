@@ -7,6 +7,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { User } from '../user/user.entity';
+import { Tournament } from '../tournament/tournament.entity';
 
 const INITIAL_FEN_POSITION =
   'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -45,6 +46,17 @@ export class Match {
     default: MatchStatus.PENDING,
   })
   status: MatchStatus = MatchStatus.PENDING;
+
+  @ManyToOne(() => Tournament, (tournament) => tournament.matches, {
+    nullable: true,
+  })
+  tournament?: Tournament;
+
+  @Column('integer', { nullable: true })
+  tournamentRound?: number;
+
+  @Column('integer', { nullable: true })
+  tournamentMatchNumber?: number;
 
   @CreateDateColumn()
   createdAt!: Date;

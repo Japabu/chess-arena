@@ -1,0 +1,173 @@
+.tournaments-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.tournaments-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #333;
+  text-align: center;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: #ffeeee;
+  border: 1px solid #ffaaaa;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  color: #cc0000;
+}
+
+.tournaments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.tournament-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tournament-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.tournament-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.tournament-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #2c3e50;
+  flex: 1;
+}
+
+.status-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  background-color: #eeeeee;
+}
+
+.status-registration {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+}
+
+.status-in-progress {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+}
+
+.status-completed {
+  background-color: #e0f2f1;
+  color: #004d40;
+}
+
+.status-cancelled {
+  background-color: #ffebee;
+  color: #b71c1c;
+}
+
+.tournament-description {
+  padding: 0 1.5rem;
+  margin: 0 0 1rem;
+  color: #546e7a;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tournament-details {
+  padding: 0 1.5rem;
+}
+
+.detail {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.detail .label {
+  color: #78909c;
+  font-weight: 500;
+}
+
+.detail .value {
+  color: #37474f;
+  font-weight: 600;
+}
+
+.tournament-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 1rem;
+}
+
+.view-button, .register-button {
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  border: none;
+  outline: none;
+}
+
+.view-button {
+  background-color: #eceff1;
+  color: #455a64;
+}
+
+.view-button:hover {
+  background-color: #cfd8dc;
+}
+
+.register-button {
+  background-color: #5c6bc0;
+  color: white;
+}
+
+.register-button:hover {
+  background-color: #3f51b5;
+}
+
+@media (max-width: 768px) {
+  .tournaments-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tournaments-container {
+    padding: 1rem;
+  }
+} 

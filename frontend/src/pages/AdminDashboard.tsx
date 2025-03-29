@@ -23,9 +23,21 @@ interface Match {
   status: string;
 }
 
+interface Tournament {
+  id: number;
+  name: string;
+  description?: string;
+  status: string;
+  format: string; 
+  maxParticipants: number;
+  participants: User[];
+  createdAt: string;
+}
+
 const AdminDashboard: Component = () => {
   const [bots, setBots] = createSignal<Bot[]>([]);
   const [matches, setMatches] = createSignal<Match[]>([]);
+  const [tournaments, setTournaments] = createSignal<Tournament[]>([]);
   const [isLoading, setIsLoading] = createSignal(true);
   const [isCreatingMatch, setIsCreatingMatch] = createSignal(false);
   const [isUpdatingMatch, setIsUpdatingMatch] = createSignal(false);
@@ -38,6 +50,11 @@ const AdminDashboard: Component = () => {
   const [createSuccess, setCreateSuccess] = createSignal('');
   const [updateSuccess, setUpdateSuccess] = createSignal('');
   const [activeTab, setActiveTab] = createSignal('bots');
+  const [isCreatingTournament, setIsCreatingTournament] = createSignal(false);
+  const [tournamentName, setTournamentName] = createSignal('');
+  const [tournamentDescription, setTournamentDescription] = createSignal('');
+  const [tournamentFormat, setTournamentFormat] = createSignal('single_elimination');
+  const [maxParticipants, setMaxParticipants] = createSignal(0);
   const navigate = useNavigate();
   
   // Check for authentication
@@ -48,6 +65,7 @@ const AdminDashboard: Component = () => {
     } else {
       fetchBots();
       fetchMatches();
+      fetchTournaments();
     }
   });
   
@@ -110,6 +128,35 @@ const AdminDashboard: Component = () => {
     } catch (err: any) {
       setError(err.message || 'An error occurred');
       console.error('Error fetching matches:', err);
+    }
+  };
+  
+  const fetchTournaments = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      
+      const response = await fetch(`http://localhost:3000/tournaments`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('admin_token');
+        navigate('/admin/login');
+        return;
+      }
+      
+      const data = await response.json();
+      
+      if (!Array.isArray(data)) {
+        throw new Error('Failed to fetch tournaments');
+      }
+      
+      setTournaments(data);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+      console.error('Error fetching tournaments:', err);
     }
   };
   
@@ -342,6 +389,143 @@ const AdminDashboard: Component = () => {
     return date.toLocaleString();
   };
 
+  const handleCreateTournament = async (e: Event) => {
+    e.preventDefault();
+    
+    if (!tournamentName()) {
+      setError('Please enter a tournament name');
+      return;
+    }
+    
+    setError('');
+    setCreateSuccess('');
+    setIsCreatingTournament(true);
+    
+    try {
+      const token = localStorage.getItem('admin_token');
+      
+      const response = await fetch(`http://localhost:3000/tournaments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: tournamentName(),
+          description: tournamentDescription(),
+          format: tournamentFormat(),
+          maxParticipants: maxParticipants(),
+          status: 'registration',
+        }),
+      });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('admin_token');
+        navigate('/admin/login');
+        return;
+      }
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create tournament');
+      }
+      
+      // Refresh the tournaments list and switch to tournaments tab
+      await fetchTournaments();
+      setCreateSuccess('Tournament created successfully!');
+      setActiveTab('tournaments');
+      setTournamentName('');
+      setTournamentDescription('');
+      setTournamentFormat('single_elimination');
+      setMaxParticipants(0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsCreatingTournament(false);
+    }
+  };
+
+  const handleDeleteTournament = async (tournamentId: number) => {
+    if (!confirm('Are you sure you want to delete this tournament?')) {
+      return;
+    }
+    
+    setError('');
+    setDeleteSuccess('');
+    
+    try {
+      const token = localStorage.getItem('admin_token');
+      
+      const response = await fetch(`http://localhost:3000/tournaments/${tournamentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('admin_token');
+        navigate('/admin/login');
+        return;
+      }
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete tournament');
+      }
+      
+      // Remove the tournament from the list
+      setTournaments(prev => prev.filter(t => t.id !== tournamentId));
+      
+      setDeleteSuccess('Tournament deleted successfully!');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setDeleteSuccess('');
+      }, 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    }
+  };
+
+  const handleStartTournament = async (tournamentId: number) => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      
+      const response = await fetch(`http://localhost:3000/tournaments/${tournamentId}/start`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.status === 401) {
+        localStorage.removeItem('admin_token');
+        navigate('/admin/login');
+        return;
+      }
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to start tournament');
+      }
+      
+      // Refresh the tournaments list
+      await fetchTournaments();
+      setCreateSuccess('Tournament started successfully!');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setCreateSuccess('');
+      }, 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    }
+  };
+
   return (
     <div class="admin-dashboard">
       <div class="admin-header">
@@ -368,12 +552,17 @@ const AdminDashboard: Component = () => {
           Manage Matches
         </button>
         <button 
-          class={activeTab() === 'create-match' ? 'tab-active' : ''} 
-          onClick={() => setActiveTab('create-match')}
+          class={activeTab() === 'tournaments' ? 'tab-active' : ''} 
+          onClick={() => setActiveTab('tournaments')}
         >
-          Create Match
+          Manage Tournaments
         </button>
-        <Show when={activeTab() === 'edit-match'}>
+        <Show when={activeTab() === 'create-match'}>
+          <button class="tab-active">
+            Create Match
+          </button>
+        </Show>
+        <Show when={activeTab() === 'edit-match' && editingMatch()}>
           <button class="tab-active">
             Edit Match
           </button>
@@ -572,6 +761,151 @@ const AdminDashboard: Component = () => {
               </button>
             </div>
           </form>
+        </Show>
+        
+        <Show when={activeTab() === 'tournaments'}>
+          <div class="admin-section">
+            <h2>Tournaments</h2>
+            
+            <Show when={deleteSuccess()}>
+              <div class="success-message">{deleteSuccess()}</div>
+            </Show>
+            
+            <Show when={createSuccess()}>
+              <div class="success-message">{createSuccess()}</div>
+            </Show>
+            
+            <Show when={error()}>
+              <div class="error-message">{error()}</div>
+            </Show>
+            
+            <button 
+              class="action-button create-button"
+              onClick={() => setIsCreatingTournament(true)}
+            >
+              Create New Tournament
+            </button>
+            
+            <Show when={isCreatingTournament()}>
+              <div class="modal-overlay">
+                <div class="modal">
+                  <h3>Create Tournament</h3>
+                  <form onSubmit={handleCreateTournament}>
+                    <div class="form-group">
+                      <label for="tournamentName">Tournament Name:</label>
+                      <input 
+                        type="text" 
+                        id="tournamentName" 
+                        value={tournamentName()} 
+                        onInput={(e) => setTournamentName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    
+                    <div class="form-group">
+                      <label for="tournamentDescription">Description:</label>
+                      <textarea 
+                        id="tournamentDescription" 
+                        value={tournamentDescription()} 
+                        onInput={(e) => setTournamentDescription(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div class="form-group">
+                      <label for="tournamentFormat">Tournament Format:</label>
+                      <select 
+                        id="tournamentFormat" 
+                        value={tournamentFormat()} 
+                        onChange={(e) => setTournamentFormat(e.target.value)}
+                      >
+                        <option value="single_elimination">Single Elimination</option>
+                        <option value="double_elimination">Double Elimination</option>
+                        <option value="round_robin">Round Robin</option>
+                        <option value="swiss">Swiss</option>
+                      </select>
+                    </div>
+                    
+                    <div class="form-group">
+                      <label for="maxParticipants">Max Participants (0 for unlimited):</label>
+                      <input 
+                        type="number" 
+                        id="maxParticipants" 
+                        value={maxParticipants()} 
+                        min={0}
+                        onInput={(e) => setMaxParticipants(parseInt(e.target.value, 10))}
+                      />
+                    </div>
+                    
+                    <div class="modal-actions">
+                      <button type="submit" class="submit-button">Create Tournament</button>
+                      <button 
+                        type="button" 
+                        class="cancel-button" 
+                        onClick={() => setIsCreatingTournament(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </Show>
+            
+            <div class="data-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Format</th>
+                    <th>Status</th>
+                    <th>Participants</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <For each={tournaments()}>
+                    {(tournament) => (
+                      <tr>
+                        <td>{tournament.id}</td>
+                        <td>{tournament.name}</td>
+                        <td>{tournament.format.replace('_', ' ')}</td>
+                        <td>{tournament.status.replace('_', ' ')}</td>
+                        <td>{tournament.participants.length} {tournament.maxParticipants > 0 ? `/ ${tournament.maxParticipants}` : ''}</td>
+                        <td>{formatDate(tournament.createdAt)}</td>
+                        <td class="action-cells">
+                          <a 
+                            href={`/tournaments/${tournament.id}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="view-button"
+                          >
+                            View
+                          </a>
+                          <Show when={tournament.status === 'registration'}>
+                            <button 
+                              class="start-button"
+                              onClick={() => handleStartTournament(tournament.id)}
+                            >
+                              Start
+                            </button>
+                          </Show>
+                          <button 
+                            class="delete-button"
+                            onClick={() => handleDeleteTournament(tournament.id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    )}
+                  </For>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </Show>
       </div>
     </div>

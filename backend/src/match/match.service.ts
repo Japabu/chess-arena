@@ -17,7 +17,7 @@ export class MatchService {
 
   findAll(): Promise<Match[]> {
     return this.matchRepository.find({
-      relations: ['white', 'black'],
+      relations: ['white', 'black', 'tournament'],
       order: {
         createdAt: 'DESC',
       },
@@ -27,7 +27,7 @@ export class MatchService {
   findOne(id: number): Promise<Match | null> {
     return this.matchRepository.findOne({
       where: { id },
-      relations: ['white', 'black'],
+      relations: ['white', 'black', 'tournament'],
     });
   }
 
@@ -49,7 +49,7 @@ export class MatchService {
     user: User,
     move: string,
   ): Promise<{ success: boolean; message: string }> {
-    if (![MatchStatus.PENDING, MatchStatus.ABORTED].includes(match.status))
+    if (![MatchStatus.PENDING, MatchStatus.IN_PROGRESS].includes(match.status))
       return { success: false, message: 'Match is already completed' };
 
     const whiteId = match.white.id;
@@ -71,6 +71,11 @@ export class MatchService {
 
     const updatedFen = chess.fen();
     let status = match.status;
+
+    if (status === MatchStatus.PENDING) {
+      status = MatchStatus.IN_PROGRESS;
+    }
+
     if (chess.isDraw()) {
       status = MatchStatus.DRAW;
     } else if (chess.isCheckmate()) {
@@ -89,6 +94,16 @@ export class MatchService {
       status,
       move: moveResult.san,
     });
+
+    // If match is completed and belongs to a tournament, notify tournament service
+    if (
+      match.tournament &&
+      [MatchStatus.WHITE_WON, MatchStatus.BLACK_WON, MatchStatus.DRAW].includes(
+        status,
+      )
+    ) {
+      this.eventEmitter.emit('match.tournament.completed', match.id);
+    }
 
     return { success: true, message: 'Move made successfully' };
   }

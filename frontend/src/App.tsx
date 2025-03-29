@@ -7,6 +7,8 @@ import BotRegistration from './pages/BotRegistration';
 import Matches from './pages/Matches';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import Tournaments from './pages/Tournaments';
+import TournamentDetails from './pages/TournamentDetails';
 
 const App: Component = () => {
   return (
@@ -20,6 +22,8 @@ const App: Component = () => {
           <Route path="/" component={Home} />
           <Route path="/register" component={BotRegistration} />
           <Route path="/matches" component={Matches} />
+          <Route path="/tournaments" component={Tournaments} />
+          <Route path="/tournaments/:id" component={TournamentDetails} />
           <Route path="/admin/login" component={AdminLogin} />
           <Route path="/admin/dashboard" component={AdminDashboard} />
       </Router>

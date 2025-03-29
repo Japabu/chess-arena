@@ -9,6 +9,7 @@ const Navbar: Component = () => {
       </div>
       <div class="navbar-links">
         <A href="/matches" class="navbar-link">Matches</A>
+        <A href="/tournaments" class="navbar-link">Tournaments</A>
         <A href="/register" class="navbar-link">Register</A>
         <A href="/admin/dashboard" class="navbar-link">Admin</A>
       </div>
