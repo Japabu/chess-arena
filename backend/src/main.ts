@@ -8,11 +8,6 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
-  // Set global prefix for API routes
-  app.setGlobalPrefix('api', {
-    exclude: ['*'], // Exclude the AppController catch-all route
-  });
-
   // Enable CORS for the frontend
   const frontendUrl = configService.getOrThrow<string>('FRONTEND_URL');
   app.enableCors({
@@ -25,8 +20,6 @@ async function bootstrap() {
   await app.listen(port);
 
   logger.log(`Application running on port ${port}`);
-  logger.log(`API available at /api`);
   logger.log(`CORS enabled for: ${frontendUrl}`);
-  logger.log(`Static files served via ServeStaticModule`);
 }
 bootstrap();

@@ -1,16 +1,15 @@
 services:
-  chess-arena:
+  backend:
     build:
-      context: .
-      args:
-        - VITE_API_URL=http://localhost:3000/api
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
       - PORT=3000
-      - FRONTEND_URL=http://localhost:3000
+      - FRONTEND_URL=http://localhost:4000
       - JWT_SECRET=secret
-      - NODE_ENV=development
+      - NODE_ENV=production
       - ADMIN_USERNAME=admin
       - ADMIN_PASSWORD=admin
       - DB_HOST=postgres
@@ -18,16 +17,44 @@ services:
       - DB_NAME=chess_arena
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
+      - DB_TYPE=postgres
     depends_on:
       - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3000
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+    depends_on:
+      - backend
 
   postgres:
     image: postgres:16-alpine
     environment:
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=chess_arena
+    ports:
+      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - chess-arena-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres-data:
+
+networks:
+  chess-arena-network:
+    driver: bridge

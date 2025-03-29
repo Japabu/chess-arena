@@ -9,13 +9,6 @@ const Registration: Component = () => {
   const [success, setSuccess] = createSignal(false);
   const navigate = useNavigate();
   
-  // Redirect if already logged in
-  createEffect(() => {
-    if (localStorage.getItem('token')) {
-      navigate('/');
-    }
-  });
-  
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
     setIsLoading(true);
@@ -28,11 +21,7 @@ const Registration: Component = () => {
       const loginData = await UserService.login(username(), password());
       localStorage.setItem('token', loginData.access_token);
       setSuccess(true);
-      
-      // Auto-redirect after 2 seconds
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+      navigate('/');
     } catch (error) {
       console.error('Registration failed:', error);
     } finally {
@@ -46,7 +35,7 @@ const Registration: Component = () => {
       
       {success() && (
         <div class="bg-green-100 border border-green-400 text-green-700 dark:bg-green-900/30 dark:border-green-600 dark:text-green-400 px-4 py-3 rounded mb-4">
-          <p class="text-lg font-medium">Registration successful! Redirecting to homepage...</p>
+          <p class="text-lg font-medium">Registration successful!</p>
         </div>
       )}
       

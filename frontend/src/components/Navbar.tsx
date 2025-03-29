@@ -1,63 +1,23 @@
-import { Component, createSignal, createEffect, Show, onMount } from 'solid-js';
+import { Component, createSignal, createEffect, Show } from 'solid-js';
 import { A, useNavigate, useLocation } from '@solidjs/router';
-import { UserService } from '../services';
+import { AuthStore } from '../services/auth.store';
 
 const Navbar: Component = () => {
   const [isMenuOpen, setIsMenuOpen] = createSignal(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = createSignal(false);
-  const [isLoggedIn, setIsLoggedIn] = createSignal(false);
-  const [isAdmin, setIsAdmin] = createSignal(false);
-  const [username, setUsername] = createSignal('');
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Function to check authentication status
-  const checkAuthStatus = () => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-    setIsAdmin(UserService.isAdmin());
-    
-    const claims = UserService.getUserClaims();
-    if (claims) {
-      setUsername(claims.username);
-    }
-  };
-
-  // Check auth status whenever component mounts or route changes
-  onMount(() => {
-    checkAuthStatus();
-    
-    // Add event listener for storage changes (logout in other tabs)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'token') {
-        checkAuthStatus();
-      }
-    });
-    
-    // Create custom event for auth state changes
-    window.addEventListener('auth-state-changed', checkAuthStatus);
-    
-    return () => {
-      window.removeEventListener('storage', checkAuthStatus);
-      window.removeEventListener('auth-state-changed', checkAuthStatus);
-    };
-  });
-  
   // Re-check auth status when location changes
   createEffect(() => {
     location.pathname; // Track route changes
-    checkAuthStatus();
+    AuthStore.checkAuthStatus();
   });
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
-    setIsAdmin(false);
+    AuthStore.logout();
     setIsUserMenuOpen(false);
     navigate('/');
-    
-    // Dispatch custom event for auth state change
-    window.dispatchEvent(new CustomEvent('auth-state-changed'));
   };
 
   // Close dropdowns when clicking outside
@@ -98,7 +58,7 @@ const Navbar: Component = () => {
               Tournaments
             </A>
             
-            <Show when={!isLoggedIn()} fallback={
+            <Show when={!AuthStore.isAuthenticated()} fallback={
               <div class="relative user-menu-container">
                 <button 
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen())}
@@ -106,9 +66,9 @@ const Navbar: Component = () => {
                 >
                   <div class="flex items-center">
                     <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-2">
-                      {username().charAt(0).toUpperCase()}
+                      {AuthStore.userDisplayName().charAt(0).toUpperCase()}
                     </div>
-                    <span>{username()}</span>
+                    <span>{AuthStore.userDisplayName()}</span>
                     <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
@@ -121,10 +81,10 @@ const Navbar: Component = () => {
                 >
                   <div class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700">
                     <div class="font-medium">Logged in as</div>
-                    <div class="truncate text-indigo-500 dark:text-indigo-400">{username()}</div>
+                    <div class="truncate text-indigo-500 dark:text-indigo-400">{AuthStore.userDisplayName()}</div>
                   </div>
                   
-                  {isAdmin() && (
+                  {AuthStore.isAdmin() && (
                     <A 
                       href="/admin/dashboard" 
                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors duration-150"
@@ -212,16 +172,16 @@ const Navbar: Component = () => {
             Tournaments
           </A>
           
-          <Show when={!isLoggedIn()} fallback={
+          <Show when={!AuthStore.isAuthenticated()} fallback={
             <>
               <div class="flex items-center px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300">
                 <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-2">
-                  {username().charAt(0).toUpperCase()}
+                  {AuthStore.userDisplayName().charAt(0).toUpperCase()}
                 </div>
-                <span>{username()}</span>
+                <span>{AuthStore.userDisplayName()}</span>
               </div>
               
-              {isAdmin() && (
+              {AuthStore.isAdmin() && (
                 <A 
                   href="/admin/dashboard" 
                   class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"

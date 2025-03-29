@@ -41,7 +41,7 @@ interface ClientData {
   cors: {
     origin: true,
   },
-  path: '/api/socket.io',
+  path: '/socket.io',
 })
 @Injectable()
 export class GameWebSocketGateway implements OnGatewayConnection {
@@ -71,7 +71,7 @@ export class GameWebSocketGateway implements OnGatewayConnection {
     this.logger.log(
       `WebSocket enabled with CORS for: ${this.configService.getOrThrow<string>('FRONTEND_URL')}`,
     );
-    this.logger.log('WebSocket path set to: /api/socket.io');
+    this.logger.log('WebSocket path set to: /socket.io');
   }
 
   async handleConnection(client: Socket) {

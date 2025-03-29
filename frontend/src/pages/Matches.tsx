@@ -61,9 +61,7 @@ const Matches: Component = () => {
   onMount(async () => {    
     await fetchInitialData();
     
-    const socketInstance = io(API_URL, {
-      path: '/socket.io'
-    });
+    const socketInstance = io(API_URL);
     setSocket(socketInstance);
     
     socketInstance.on('connect', async () => {

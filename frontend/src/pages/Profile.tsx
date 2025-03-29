@@ -87,7 +87,7 @@ const Profile: Component = () => {
                 </div>
               </div>
 
-              <div class="bg-gray-50 dark:bg-gray-750 rounded-lg p-4">
+              <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 shadow-inner">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">Chess Arena Stats</h3>
                 <ul class="space-y-2">
                   <li class="flex justify-between">

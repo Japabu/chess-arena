@@ -1,6 +1,6 @@
 import { Component, createSignal, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import { UserService } from '../services';
+import { AuthStore } from '../services/auth.store';
 
 const Login: Component = () => {
   const [username, setUsername] = createSignal('');
@@ -9,11 +9,9 @@ const Login: Component = () => {
   const [error, setError] = createSignal('');
   const navigate = useNavigate();
   
-  // Redirect if already logged in
   createEffect(() => {
-    if (localStorage.getItem('token')) {
-      const claims = UserService.getUserClaims();
-      if (claims?.roles?.includes('admin')) {
+    if (AuthStore.isAuthenticated()) {
+      if (AuthStore.isAdmin()) {
         navigate('/admin/dashboard');
       } else {
         navigate('/');
@@ -27,18 +25,17 @@ const Login: Component = () => {
     setError('');
     
     try {
-      const data = await UserService.login(username(), password());
-      localStorage.setItem('token', data.access_token);
+      const success = await AuthStore.login(username(), password());
       
-      // Notify the app that auth state has changed
-      window.dispatchEvent(new CustomEvent('auth-state-changed'));
-      
-      // Redirect based on user role
-      const claims = UserService.getUserClaims();
-      if (claims?.roles?.includes('admin')) {
-        navigate('/admin/dashboard');
+      if (success) {
+        // Redirect based on user role
+        if (AuthStore.isAdmin()) {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/');
+        }
       } else {
-        navigate('/');
+        setError('Login failed. Please try again.');
       }
     } catch (error) {
       console.error('Login failed:', error);
