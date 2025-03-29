@@ -12,7 +12,7 @@ export class UserService {
    */
   static async getAllUsers(): Promise<User[]> {
     const token = localStorage.getItem("token");
-    const response = await fetch(`${this.baseUrl}/user/admin`, {
+    const response = await fetch(`${this.baseUrl}/admin/users`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -70,7 +70,7 @@ export class UserService {
    */
   static async deleteUser(userId: number): Promise<void> {
     const token = localStorage.getItem("token");
-    await fetch(`${this.baseUrl}/user/admin/${userId}`, {
+    await fetch(`${this.baseUrl}/admin/users/${userId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

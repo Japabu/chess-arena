@@ -56,7 +56,7 @@ export class UserController {
 // Admin Endpoints
 // ==========================================
 @UseGuards(AuthGuard(['admin']))
-@Controller('user/admin')
+@Controller('admin/users')
 export class UserAdminController {
   constructor(private userService: UserService) {}
 
