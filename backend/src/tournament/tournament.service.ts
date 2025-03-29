@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  Tournament,
-  TournamentStatus,
-  TournamentFormat,
-} from './tournament.entity';
-import { Match, MatchStatus } from '../match/match.entity';
-import { User } from '../user/user.entity';
+import { TournamentEntity } from './tournament.entity';
+import { MatchEntity } from '../match/match.entity';
+import { UserEntity } from '../user/user.entity';
 import { MatchService } from '../match/match.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnEvent } from '@nestjs/event-emitter';
+import { TournamentStatus } from './tournament.model';
+import { MatchStatus } from '../match/match.model';
 
 export interface TournamentBracket {
   rounds: {
@@ -18,8 +16,8 @@ export interface TournamentBracket {
     matches: {
       matchId?: number;
       matchNumber: number;
-      player1?: User;
-      player2?: User;
+      player1?: UserEntity;
+      player2?: UserEntity;
       winner?: number;
       status?: string;
     }[];
@@ -29,15 +27,14 @@ export interface TournamentBracket {
 @Injectable()
 export class TournamentService {
   constructor(
-    @InjectRepository(Tournament)
-    private tournamentRepository: Repository<Tournament>,
-    @InjectRepository(Match)
-    private matchRepository: Repository<Match>,
-    private matchService: MatchService,
+    @InjectRepository(TournamentEntity)
+    private tournamentRepository: Repository<TournamentEntity>,
+    @InjectRepository(MatchEntity)
+    private matchRepository: Repository<MatchEntity>,
     private eventEmitter: EventEmitter2,
   ) {}
 
-  findAll(): Promise<Tournament[]> {
+  findAll(): Promise<TournamentEntity[]> {
     return this.tournamentRepository.find({
       relations: ['participants'],
       order: {
@@ -46,22 +43,24 @@ export class TournamentService {
     });
   }
 
-  findOne(id: number): Promise<Tournament | null> {
+  findOne(id: number): Promise<TournamentEntity | null> {
     return this.tournamentRepository.findOne({
       where: { id },
       relations: ['participants', 'matches', 'matches.white', 'matches.black'],
     });
   }
 
-  async create(tournament: Partial<Tournament>): Promise<Tournament> {
+  async create(
+    tournament: Partial<TournamentEntity>,
+  ): Promise<TournamentEntity> {
     const newTournament = this.tournamentRepository.create(tournament);
     return this.tournamentRepository.save(newTournament);
   }
 
   async update(
     id: number,
-    tournamentData: Partial<Tournament>,
-  ): Promise<Tournament | null> {
+    tournamentData: Partial<TournamentEntity>,
+  ): Promise<TournamentEntity | null> {
     await this.tournamentRepository.update(id, tournamentData);
     return this.findOne(id);
   }
@@ -73,7 +72,7 @@ export class TournamentService {
   async registerParticipant(
     tournamentId: number,
     userId: number,
-  ): Promise<Tournament | null> {
+  ): Promise<TournamentEntity | null> {
     const tournament = await this.findOne(tournamentId);
     if (!tournament) {
       throw new Error('Tournament not found');
@@ -98,14 +97,16 @@ export class TournamentService {
     // Add user to participants
     await this.tournamentRepository
       .createQueryBuilder()
-      .relation(Tournament, 'participants')
+      .relation(TournamentEntity, 'participants')
       .of(tournamentId)
       .add(userId);
 
     return this.findOne(tournamentId);
   }
 
-  async startTournament(tournamentId: number): Promise<Tournament | null> {
+  async startTournament(
+    tournamentId: number,
+  ): Promise<TournamentEntity | null> {
     const tournament = await this.findOne(tournamentId);
     if (!tournament) {
       throw new Error('Tournament not found');
@@ -122,16 +123,7 @@ export class TournamentService {
     // Create the tournament bracket based on format
     let bracketData: TournamentBracket;
 
-    switch (tournament.format) {
-      case TournamentFormat.SINGLE_ELIMINATION:
-        bracketData = this.createSingleEliminationBracket(tournament);
-        break;
-      case TournamentFormat.ROUND_ROBIN:
-        bracketData = this.createRoundRobinBracket(tournament);
-        break;
-      default:
-        bracketData = this.createSingleEliminationBracket(tournament);
-    }
+    bracketData = this.createSingleEliminationBracket(tournament);
 
     // Create initial matches
     await this.createInitialMatches(tournament, bracketData);
@@ -145,7 +137,7 @@ export class TournamentService {
   }
 
   private createSingleEliminationBracket(
-    tournament: Tournament,
+    tournament: TournamentEntity,
   ): TournamentBracket {
     const participants = [...tournament.participants];
 
@@ -169,7 +161,6 @@ export class TournamentService {
 
     // Calculate number of matches in the first round
     const firstRoundMatches = Math.pow(2, rounds - 1);
-    const byes = firstRoundMatches * 2 - participantCount;
 
     // Create first round matches
     let participantIndex = 0;
@@ -202,61 +193,8 @@ export class TournamentService {
     return bracket;
   }
 
-  private createRoundRobinBracket(tournament: Tournament): TournamentBracket {
-    const participants = [...tournament.participants];
-    const participantCount = participants.length;
-
-    // For odd number of participants, add a "bye" placeholder
-    const actualParticipants =
-      participantCount % 2 === 0 ? participantCount : participantCount + 1;
-
-    const rounds = actualParticipants - 1;
-    const matchesPerRound = actualParticipants / 2;
-
-    // Initialize bracket
-    const bracket: TournamentBracket = {
-      rounds: Array.from({ length: rounds }, (_, roundIndex) => ({
-        round: roundIndex + 1,
-        matches: [],
-      })),
-    };
-
-    // Implement round-robin scheduling algorithm (circle method)
-    const positions = Array.from({ length: actualParticipants }, (_, i) =>
-      i < participantCount ? participants[i] : undefined,
-    );
-
-    for (let round = 0; round < rounds; round++) {
-      for (let match = 0; match < matchesPerRound; match++) {
-        const homeIdx = match;
-        const awayIdx = actualParticipants - 1 - match;
-
-        // Skip matches with bye (undefined player)
-        if (positions[homeIdx] && positions[awayIdx]) {
-          bracket.rounds[round].matches.push({
-            matchNumber: match + 1,
-            player1: positions[homeIdx],
-            player2: positions[awayIdx],
-          });
-        }
-      }
-
-      // Rotate players (except the first position)
-      const firstPosition = positions[0];
-      const lastPosition = positions[positions.length - 1];
-
-      for (let i = positions.length - 1; i > 1; i--) {
-        positions[i] = positions[i - 1];
-      }
-
-      positions[1] = lastPosition;
-    }
-
-    return bracket;
-  }
-
   private async createInitialMatches(
-    tournament: Tournament,
+    tournament: TournamentEntity,
     bracket: TournamentBracket,
   ): Promise<void> {
     // Only create matches for first round

@@ -1,7 +1,8 @@
 // Common entity types
 export interface User {
   id: number;
-  name: string;
+  username: string;
+  createdAt: string;
 }
 
 export interface Tournament {

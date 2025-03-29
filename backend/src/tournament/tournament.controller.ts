@@ -12,8 +12,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { TournamentService, TournamentBracket } from './tournament.service';
-import { Tournament } from './tournament.entity';
-import { User } from '../user/user.entity';
+import { TournamentEntity } from './tournament.entity';
+import { UserEntity } from '../user/user.entity';
 import { AuthGuard } from '../user/jwt.guard';
 import { User as CurrentUser } from '../user/user.decorator';
 
@@ -40,7 +40,7 @@ export class TournamentController {
 
   @Post()
   @UseGuards(AuthGuard(['admin']))
-  create(@Body() tournament: Partial<Tournament>) {
+  create(@Body() tournament: Partial<TournamentEntity>) {
     return this.tournamentService.create(tournament);
   }
 
@@ -48,7 +48,7 @@ export class TournamentController {
   @UseGuards(AuthGuard(['admin']))
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() tournamentData: Partial<Tournament>,
+    @Body() tournamentData: Partial<TournamentEntity>,
   ) {
     return this.tournamentService.update(id, tournamentData);
   }
@@ -63,7 +63,7 @@ export class TournamentController {
   @UseGuards(AuthGuard())
   async register(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserEntity,
   ) {
     try {
       return await this.tournamentService.registerParticipant(id, user.id);

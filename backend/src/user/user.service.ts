@@ -7,11 +7,12 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { UserEntity } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { User } from './user.model';
+import { modelToUser } from './user.mapper';
 
-// JWT payload interface
 export interface JwtPayload {
   id: number;
   username: string;
@@ -24,7 +25,8 @@ export class UserService implements OnModuleInit {
 
   constructor(
     private jwtService: JwtService,
-    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
     private configService: ConfigService,
   ) {}
 
@@ -38,25 +40,21 @@ export class UserService implements OnModuleInit {
     const adminPassword =
       this.configService.getOrThrow<string>('ADMIN_PASSWORD');
 
-    const existingAdmin = await this.userRepository.findOne({
-      where: { username: adminUsername },
-    });
-
-    if (!existingAdmin) {
-      const hashedPassword = await bcrypt.hash(adminPassword, this.saltRounds);
-
-      const admin = this.userRepository.create({
+    if (
+      await this.userRepository.findOneBy({
         username: adminUsername,
-        password: hashedPassword,
-        roles: ['admin'],
-      });
-
-      await this.userRepository.save(admin);
-    } else if (!existingAdmin.roles.includes('admin')) {
-      // If user exists but doesn't have admin role, add it
-      existingAdmin.roles = [...existingAdmin.roles, 'admin'];
-      await this.userRepository.save(existingAdmin);
+      })
+    ) {
+      return;
     }
+
+    await this.userRepository.save(
+      this.userRepository.create({
+        username: adminUsername,
+        password: await bcrypt.hash(adminPassword, this.saltRounds),
+        roles: ['admin'],
+      }),
+    );
   }
 
   async login(
@@ -86,7 +84,7 @@ export class UserService implements OnModuleInit {
     };
   }
 
-  async register(username: string, password: string): Promise<{ id: number }> {
+  async register(username: string, password: string): Promise<void> {
     const existingUser = await this.userRepository.findOne({
       where: { username },
     });
@@ -103,18 +101,10 @@ export class UserService implements OnModuleInit {
     });
 
     await this.userRepository.save(newUser);
-
-    return {
-      id: newUser.id,
-    };
   }
 
   async findAll(): Promise<User[]> {
-    const users = await this.userRepository.find();
-    return users.map((user) => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword as User;
-    });
+    return (await this.userRepository.find()).map(modelToUser);
   }
 
   async deleteUser(id: number): Promise<void> {
@@ -130,8 +120,7 @@ export class UserService implements OnModuleInit {
       return null;
     }
 
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword as User;
+    return modelToUser(user);
   }
 
   createToken(payload: JwtPayload): string {

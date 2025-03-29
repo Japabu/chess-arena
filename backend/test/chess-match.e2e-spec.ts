@@ -5,15 +5,15 @@ import { AppModule } from './../src/app.module';
 import { io, Manager, ManagerOptions } from 'socket.io-client';
 import { ConfigService } from '@nestjs/config';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Match } from '../src/match/match.entity';
+import { MatchEntity } from '../src/match/match.entity';
 import { Repository } from 'typeorm';
-import { User } from '../src/user/user.entity';
+import { UserEntity } from '../src/user/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 describe('Chess Match with Players (e2e)', () => {
   let app: INestApplication;
-  let matchesRepository: Repository<Match>;
-  let usersRepository: Repository<User>;
+  let matchesRepository: Repository<MatchEntity>;
+  let usersRepository: Repository<UserEntity>;
   let configService: ConfigService;
   let user1Id: number;
   let user2Id: number;
@@ -35,7 +35,7 @@ describe('Chess Match with Players (e2e)', () => {
         TypeOrmModule.forRoot({
           type: 'sqlite',
           database: ':memory:',
-          entities: [Match, User],
+          entities: [MatchEntity, UserEntity],
           synchronize: true,
         }),
         AppModule,
@@ -47,11 +47,11 @@ describe('Chess Match with Players (e2e)', () => {
     await app.init();
 
     // Get repositories and config service
-    matchesRepository = moduleFixture.get<Repository<Match>>(
-      getRepositoryToken(Match),
+    matchesRepository = moduleFixture.get<Repository<MatchEntity>>(
+      getRepositoryToken(MatchEntity),
     );
-    usersRepository = moduleFixture.get<Repository<User>>(
-      getRepositoryToken(User),
+    usersRepository = moduleFixture.get<Repository<UserEntity>>(
+      getRepositoryToken(UserEntity),
     );
     configService = moduleFixture.get<ConfigService>(ConfigService);
 

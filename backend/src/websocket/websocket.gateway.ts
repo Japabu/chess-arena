@@ -10,7 +10,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { MatchUpdateEvent } from '../match/match-update.event';
+import { MatchUpdateEvent } from '../match/match.model';
 import { MatchService } from '../match/match.service';
 import { JwtPayload, UserService } from '../user/user.service';
 

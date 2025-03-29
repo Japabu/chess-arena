@@ -1,46 +1,50 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult } from 'typeorm';
-import { Match, MatchStatus } from './match.entity';
-import { User } from 'src/user/user.entity';
+import { MatchEntity } from './match.entity';
 import { Chess } from 'chess.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { MatchUpdateEvent } from './match-update.event';
+import { Match, MatchStatus, MatchUpdateEvent } from './match.model';
+import { modelToMatch } from './match.mapper';
+import { User } from 'src/user/user.model';
 
 @Injectable()
 export class MatchService {
   constructor(
-    @InjectRepository(Match)
-    private matchRepository: Repository<Match>,
+    @InjectRepository(MatchEntity)
+    private matchRepository: Repository<MatchEntity>,
     private eventEmitter: EventEmitter2,
   ) {}
 
   findAll(): Promise<Match[]> {
-    return this.matchRepository.find({
-      relations: ['white', 'black', 'tournament'],
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    return this.matchRepository
+      .find({
+        relations: ['white', 'black', 'tournament'],
+        order: {
+          createdAt: 'DESC',
+        },
+      })
+      .then((matches) => matches.map(modelToMatch));
   }
-
-  findOne(id: number): Promise<Match | null> {
-    return this.matchRepository.findOne({
+  async findOne(id: number): Promise<Match | null> {
+    const match = await this.matchRepository.findOne({
       where: { id },
       relations: ['white', 'black', 'tournament'],
     });
+    return match ? modelToMatch(match) : null;
   }
 
-  create(match: Partial<Match>): Promise<Match> {
-    const newMatch = this.matchRepository.create(match);
-    return this.matchRepository.save(newMatch);
+  async create(match: Partial<MatchEntity>): Promise<Match> {
+    return modelToMatch(
+      await this.matchRepository.save(this.matchRepository.create(match)),
+    );
   }
 
   async delete(id: number): Promise<void> {
     await this.matchRepository.delete(id);
   }
 
-  update(id: number, match: Partial<Match>): Promise<UpdateResult> {
+  update(id: number, match: Partial<MatchEntity>): Promise<UpdateResult> {
     return this.matchRepository.update(id, match);
   }
 

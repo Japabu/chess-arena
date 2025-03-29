@@ -9,9 +9,10 @@ import {
   Put,
 } from '@nestjs/common';
 import { MatchService } from './match.service';
-import { Match } from './match.entity';
+import { MatchEntity } from './match.entity';
 import { AuthGuard } from '../user/jwt.guard';
 import { UpdateResult } from 'typeorm';
+import { Match } from './match.model';
 
 @Controller('match')
 export class MatchController {
@@ -33,7 +34,7 @@ export class MatchController {
 
   @Post()
   @UseGuards(AuthGuard(['admin']))
-  create(@Body() match: Partial<Match>): Promise<Match> {
+  create(@Body() match: Partial<MatchEntity>): Promise<Match> {
     return this.matchService.create(match);
   }
 
@@ -47,7 +48,7 @@ export class MatchController {
   @UseGuards(AuthGuard(['admin']))
   update(
     @Param('id') id: string,
-    @Body() match: Partial<Match>,
+    @Body() match: Partial<MatchEntity>,
   ): Promise<UpdateResult> {
     return this.matchService.update(+id, match);
   }

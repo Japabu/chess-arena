@@ -12,13 +12,14 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { LoginRequest } from './dto/login-request.dto';
-import { LoginResponse } from './dto/login-response.dto';
-import { RegisterUserRequest } from './dto/register-request';
-import { RegisterUserResponse } from './dto/register-response';
+import {
+  LoginRequest,
+  LoginResponse,
+  RegisterUserRequest,
+  UserResponse,
+} from './user.dto';
 import { AuthGuard } from './jwt.guard';
-import { User } from './user.entity';
-import { GetUsersResponse } from './dto/get-users-response.dto';
+import { User } from './user.model';
 
 @Controller('user')
 export class UserController {
@@ -32,23 +33,26 @@ export class UserController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(
-    @Body() registerRequest: RegisterUserRequest,
-  ): Promise<RegisterUserResponse> {
-    const { id } = await this.userService.register(
+  async register(@Body() registerRequest: RegisterUserRequest): Promise<void> {
+    await this.userService.register(
       registerRequest.username,
       registerRequest.password,
     );
-    return { id, username: registerRequest.username };
   }
 
   @Get(':id')
-  async getUserById(@Param('id', ParseIntPipe) id: number): Promise<User> {
+  async getUserById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<UserResponse> {
     const user = await this.userService.findOne(id);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return user;
+    return new UserResponse(
+      user.id,
+      user.username,
+      user.createdAt.toISOString(),
+    );
   }
 }
 

@@ -8,25 +8,11 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { User } from '../user/user.entity';
-import { Match } from '../match/match.entity';
-
-export enum TournamentStatus {
-  REGISTRATION = 'registration',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-}
-
-export enum TournamentFormat {
-  SINGLE_ELIMINATION = 'single_elimination',
-  DOUBLE_ELIMINATION = 'double_elimination',
-  ROUND_ROBIN = 'round_robin',
-  SWISS = 'swiss',
-}
-
+import { UserEntity } from '../user/user.entity';
+import { MatchEntity } from '../match/match.entity';
+import { TournamentStatus } from './tournament.model';
 @Entity()
-export class Tournament {
+export class TournamentEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -43,13 +29,6 @@ export class Tournament {
   })
   status: TournamentStatus = TournamentStatus.REGISTRATION;
 
-  @Column({
-    type: 'varchar',
-    enum: TournamentFormat,
-    default: TournamentFormat.SINGLE_ELIMINATION,
-  })
-  format: TournamentFormat = TournamentFormat.SINGLE_ELIMINATION;
-
   @Column('integer', { default: 0 })
   maxParticipants: number = 0;
 
@@ -65,12 +44,12 @@ export class Tournament {
   @Column('timestamp', { nullable: true })
   endDate?: Date;
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => UserEntity)
   @JoinTable()
-  participants!: User[];
+  participants!: UserEntity[];
 
-  @OneToMany(() => Match, (match) => match.tournament)
-  matches!: Match[];
+  @OneToMany(() => MatchEntity, (match) => match.tournament)
+  matches!: MatchEntity[];
 
   @Column('text', { nullable: true })
   bracketData?: string;
