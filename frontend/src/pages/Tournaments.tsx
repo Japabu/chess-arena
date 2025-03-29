@@ -1,6 +1,6 @@
 import { Component, createSignal, createResource, For, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import { TournamentService, type Tournament, type User, type ApiError } from '../services/api';
+import { TournamentService, type Tournament } from '../services/api';
 
 const Tournaments: Component = () => {
   const navigate = useNavigate();
@@ -37,15 +37,15 @@ const Tournaments: Component = () => {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'registration':
-        return 'badge badge-green';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100 border border-green-200 dark:border-green-600';
       case 'in_progress':
-        return 'badge badge-blue';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-blue-100 border border-blue-200 dark:border-blue-600';
       case 'completed':
-        return 'badge badge-gray';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-600';
       case 'cancelled':
-        return 'badge badge-red';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100 border border-red-200 dark:border-red-600';
       default:
-        return 'badge badge-gray';
+        return 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-600';
     }
   };
 
@@ -62,8 +62,8 @@ const Tournaments: Component = () => {
   };
 
   return (
-    <div class="content-container">
-      <h1 class="heading-primary mb-8">Chess Tournaments</h1>
+    <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Chess Tournaments</h1>
 
       <Show when={tournaments.loading}>
         <div class="flex justify-center items-center py-12">
@@ -92,16 +92,16 @@ const Tournaments: Component = () => {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <For each={tournaments()}>
           {(tournament) => (
-            <div class="card card-hover">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-500">
               <div class="p-6">
                 <div class="flex justify-between items-start mb-4">
-                  <h2 class="heading-secondary truncate mr-2">{tournament.name}</h2>
+                  <h2 class="text-xl font-bold text-gray-900 dark:text-white truncate mr-2">{tournament.name}</h2>
                   <span class={getStatusBadgeClass(tournament.status)}>
                     {tournament.status.replace('_', ' ')}
                   </span>
                 </div>
                 
-                <p class="text-body mb-6 line-clamp-3">
+                <p class="text-gray-800 dark:text-gray-200 mb-6 line-clamp-3">
                   {tournament.description || 'No description provided'}
                 </p>
                 
@@ -136,7 +136,7 @@ const Tournaments: Component = () => {
                 
                 <div class="flex space-x-3">
                   <button
-                    class="flex-1 btn-primary"
+                    class="flex-1 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 font-bold"
                     onClick={() => navigate(`/tournaments/${tournament.id}`)}
                   >
                     View Details
@@ -144,7 +144,7 @@ const Tournaments: Component = () => {
                   
                   <Show when={tournament.status === 'registration' && isAuthenticated()}>
                     <button
-                      class="flex-1 btn-secondary"
+                      class="flex-1 px-4 py-2 border border-indigo-200 dark:border-indigo-700 rounded-md shadow-sm text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/50 hover:bg-indigo-200 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
                       onClick={() => handleRegister(tournament.id)}
                     >
                       Register

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -10,12 +11,6 @@ import { User } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 
-// Interface for admin credentials
-interface AdminCredentials {
-  username: string;
-  password: string;
-}
-
 // JWT payload interface
 export interface JwtPayload {
   id: number;
@@ -24,49 +19,50 @@ export interface JwtPayload {
 }
 
 @Injectable()
-export class UserService {
-  private readonly adminCredentials: AdminCredentials;
+export class UserService implements OnModuleInit {
   private readonly saltRounds = 10;
 
   constructor(
     private jwtService: JwtService,
     @InjectRepository(User) private userRepository: Repository<User>,
-    configService: ConfigService,
-  ) {
-    // Hardcoded admin credentials - in a real app these would be stored securely
-    this.adminCredentials = {
-      username: configService.get<string>('ADMIN_USERNAME', 'admin'),
-      password: configService.get<string>('ADMIN_PASSWORD', 'chessmaster'),
-    };
+    private configService: ConfigService,
+  ) {}
+
+  async onModuleInit() {
+    await this.ensureAdminExists();
   }
 
-  async validateAdmin(username: string, password: string): Promise<boolean> {
-    // Simple validation against hardcoded credentials
-    if (
-      username === this.adminCredentials.username &&
-      password === this.adminCredentials.password
-    ) {
-      return true;
+  private async ensureAdminExists() {
+    const adminUsername =
+      this.configService.getOrThrow<string>('ADMIN_USERNAME');
+    const adminPassword =
+      this.configService.getOrThrow<string>('ADMIN_PASSWORD');
+
+    const existingAdmin = await this.userRepository.findOne({
+      where: { username: adminUsername },
+    });
+
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash(adminPassword, this.saltRounds);
+
+      const admin = this.userRepository.create({
+        username: adminUsername,
+        password: hashedPassword,
+        roles: ['admin'],
+      });
+
+      await this.userRepository.save(admin);
+    } else if (!existingAdmin.roles.includes('admin')) {
+      // If user exists but doesn't have admin role, add it
+      existingAdmin.roles = [...existingAdmin.roles, 'admin'];
+      await this.userRepository.save(existingAdmin);
     }
-    return false;
   }
 
   async login(
     username: string,
     password: string,
   ): Promise<{ access_token: string }> {
-    const isAdmin = await this.validateAdmin(username, password);
-
-    if (isAdmin) {
-      return {
-        access_token: this.createToken({
-          id: -1,
-          username,
-          roles: ['admin'],
-        }),
-      };
-    }
-
     const user = await this.userRepository.findOne({
       where: { username: username },
     });
@@ -115,7 +111,6 @@ export class UserService {
 
   async findAll(): Promise<User[]> {
     const users = await this.userRepository.find();
-    // Remove passwords from the response
     return users.map((user) => {
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword as User;
@@ -135,7 +130,6 @@ export class UserService {
       return null;
     }
 
-    // Remove password from the response
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword as User;
   }

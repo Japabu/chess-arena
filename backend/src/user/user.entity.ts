@@ -5,7 +5,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ApiHideProperty } from '@nestjs/swagger';
 
 @Entity()
 export class User {
@@ -15,7 +14,6 @@ export class User {
   @Column()
   username!: string;
 
-  @ApiHideProperty()
   @Column()
   password!: string;
 

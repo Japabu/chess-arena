@@ -10,6 +10,7 @@ interface ChessBoardProps {
 const ChessBoard: Component<ChessBoardProps> = (props) => {
   const [position, setPosition] = createSignal<Chess>();
   const [boardSize, setBoardSize] = createSignal(props.size || 400);
+  const squareSize = () => boardSize() / 8;
   
   // Initialize chess position from FEN
   createEffect(() => {
@@ -31,7 +32,7 @@ const ChessBoard: Component<ChessBoardProps> = (props) => {
   
   const renderSquare = (row: number, col: number) => {
     const isLightSquare = (row + col) % 2 === 0;
-    const squareClass = isLightSquare ? 'chess-square-light' : 'chess-square-dark';
+    const squareColor = isLightSquare ? 'bg-[#f0d9b5]' : 'bg-[#b58863]';
     const squareNotation = String.fromCharCode(97 + col) + (8 - row) as Square;
     
     let pieceClass = '';
@@ -44,12 +45,13 @@ const ChessBoard: Component<ChessBoardProps> = (props) => {
     
     return (
       <div 
-        class={`relative flex-1 flex justify-center items-center ${squareClass} transition-colors duration-200`} 
+        class={`${squareColor} flex justify-center items-center`} 
+        style={{ width: `${squareSize()}px`, height: `${squareSize()}px` }}
         data-square={squareNotation}
       >
         {pieceClass && (
           <div 
-            class="w-full h-full bg-center bg-no-repeat bg-contain select-none transition-transform duration-150 hover:scale-105"
+            class="w-full h-full bg-center bg-no-repeat bg-contain"
             style={{ "background-image": `url('/assets/pieces/${pieceClass}.svg')` }}
           ></div>
         )}
@@ -58,66 +60,29 @@ const ChessBoard: Component<ChessBoardProps> = (props) => {
   };
   
   const renderBoard = () => {
-    const board = [];
+    const rows = [];
     
-    // Files notation (a-h)
-    const filesNotation = (
-      <div class="flex justify-around px-1 py-1">
-        {['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(file => (
-          <div class="w-full text-center chess-notation">{file}</div>
-        ))}
-      </div>
-    );
-    
-    // Build board with rank notation (1-8)
+    // Build board
     for (let row = 0; row < 8; row++) {
       const squareRow = [];
       
-      // Rank notation
-      squareRow.push(
-        <div class="w-6 chess-notation">
-          {8 - row}
-        </div>
-      );
-      
-      // Chess squares
       for (let col = 0; col < 8; col++) {
         squareRow.push(renderSquare(row, col));
       }
       
-      // Rank notation on right side
-      squareRow.push(
-        <div class="w-6 chess-notation">
-          {8 - row}
-        </div>
-      );
-      
-      board.push(<div class="flex flex-1">{squareRow}</div>);
+      rows.push(<div class="flex">{squareRow}</div>);
     }
     
     return (
       <div class="flex flex-col">
-        <div class="flex">
-          <div class="w-6"></div>
-          {filesNotation}
-          <div class="w-6"></div>
-        </div>
-        {board}
-        <div class="flex">
-          <div class="w-6"></div>
-          {filesNotation}
-          <div class="w-6"></div>
-        </div>
+        {rows}
       </div>
     );
   };
   
   return (
-    <div class="chess-board">
-      <div 
-        class="rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 card-hover"
-        style={{ width: `${boardSize() + 48}px` }}
-      >
+    <div class="flex justify-center items-center p-2">
+      <div class="rounded-lg overflow-hidden shadow-lg">
         {renderBoard()}
       </div>
     </div>

@@ -22,10 +22,10 @@ import { Tournament } from './tournament/tournament.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: configService.get<'sqlite'>('DB_TYPE', 'sqlite'),
-        database: configService.get<string>('DB_NAME', 'chess_arena.sqlite'),
+        type: configService.getOrThrow<'sqlite'>('DB_TYPE'),
+        database: configService.getOrThrow<string>('DB_NAME'),
         entities: [Match, User, Tournament],
-        synchronize: configService.get('NODE_ENV') !== 'production',
+        synchronize: configService.getOrThrow('NODE_ENV') !== 'production',
       }),
     }),
     ScheduleModule.forRoot(),

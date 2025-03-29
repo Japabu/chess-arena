@@ -1,6 +1,5 @@
 import { Component, createSignal, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import '../../styles/Admin.css';
 import { UserService, TournamentService } from '../../services/api';
 
 const CreateTournament: Component = () => {
@@ -58,17 +57,23 @@ const CreateTournament: Component = () => {
   };
   
   return (
-    <div class="create-tournament-page">
-      <h1 class="page-title">Create Tournament</h1>
+    <div class="max-w-3xl mx-auto px-4 py-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Create Tournament</h1>
       
-      {error() && <div class="error-message">{error()}</div>}
+      {error() && (
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 dark:bg-red-900/30 dark:text-red-400">
+          {error()}
+        </div>
+      )}
       
-      <div class="section-card">
-        <form class="admin-form" onSubmit={handleCreateTournament}>
-          <h2 class="form-title">Tournament Details</h2>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <form class="p-6 space-y-6" onSubmit={handleCreateTournament}>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Tournament Details</h2>
           
-          <div class="form-group">
-            <label for="tournament-name">Tournament Name*</label>
+          <div class="space-y-2">
+            <label for="tournament-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Tournament Name*
+            </label>
             <input 
               type="text" 
               id="tournament-name" 
@@ -77,11 +82,14 @@ const CreateTournament: Component = () => {
               placeholder="Enter tournament name"
               required
               disabled={isCreating()}
+              class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             />
           </div>
           
-          <div class="form-group">
-            <label for="tournament-description">Description</label>
+          <div class="space-y-2">
+            <label for="tournament-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Description
+            </label>
             <textarea 
               id="tournament-description" 
               value={tournamentDescription()} 
@@ -89,29 +97,35 @@ const CreateTournament: Component = () => {
               placeholder="Enter tournament description (optional)"
               rows={4}
               disabled={isCreating()}
+              class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             />
           </div>
           
-          <div class="form-group">
-            <label for="tournament-format">Tournament Format</label>
+          <div class="space-y-2">
+            <label for="tournament-format" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Tournament Format
+            </label>
             <select 
               id="tournament-format" 
               value={tournamentFormat()} 
               onChange={(e) => setTournamentFormat(e.currentTarget.value)}
               disabled={isCreating()}
+              class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             >
               <option value="single_elimination">Single Elimination</option>
               <option value="double_elimination">Double Elimination</option>
               <option value="round_robin">Round Robin</option>
               <option value="swiss">Swiss</option>
             </select>
-            <div class="form-hint">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
               How the tournament matchups will be organized
             </div>
           </div>
           
-          <div class="form-group">
-            <label for="max-participants">Maximum Participants</label>
+          <div class="space-y-2">
+            <label for="max-participants" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Maximum Participants
+            </label>
             <input 
               type="number" 
               id="max-participants" 
@@ -119,16 +133,17 @@ const CreateTournament: Component = () => {
               value={maxParticipants()} 
               onInput={(e) => setMaxParticipants(parseInt(e.currentTarget.value) || 0)}
               disabled={isCreating()}
+              class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             />
-            <div class="form-hint">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
               Set to 0 for unlimited participants
             </div>
           </div>
           
-          <div class="form-footer">
+          <div class="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
             <button 
               type="button" 
-              class="btn btn-secondary" 
+              class="px-4 py-2 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors disabled:opacity-50" 
               onClick={() => navigate('/admin/tournaments')}
               disabled={isCreating()}
             >
@@ -136,7 +151,7 @@ const CreateTournament: Component = () => {
             </button>
             <button 
               type="submit" 
-              class="btn btn-primary"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
               disabled={isCreating() || !tournamentName()}
             >
               {isCreating() ? 'Creating...' : 'Create Tournament'}

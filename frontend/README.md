@@ -4,6 +4,20 @@
 $ npm install # or pnpm install or yarn install
 ```
 
+## Configuration
+
+Before running the application, you need to set up your environment variables:
+
+1. Copy the example environment file:
+```bash
+cp .env.example .env
+```
+
+2. Update the `.env` file with your specific configuration:
+```
+VITE_API_URL=http://your-backend-api-url
+```
+
 ### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
 
 ## Available Scripts

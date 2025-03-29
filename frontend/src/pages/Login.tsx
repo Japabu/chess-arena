@@ -1,7 +1,6 @@
 import { Component, createSignal, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { UserService } from '../services';
-import './AdminLogin.css';
 
 const Login: Component = () => {
   const [username, setUsername] = createSignal('');
@@ -50,7 +49,7 @@ const Login: Component = () => {
   };
 
   return (
-    <div class="admin-login">
+    <div class="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Login</h1>
       
       {error() && (
@@ -59,9 +58,9 @@ const Login: Component = () => {
         </div>
       )}
       
-      <form onSubmit={handleSubmit} class="login-form">
-        <div class="form-group">
-          <label for="username" class="text-gray-800 dark:text-gray-200 font-medium">Username</label>
+      <form onSubmit={handleSubmit} class="space-y-4">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Username</label>
           <input
             type="text"
             id="username"
@@ -69,12 +68,12 @@ const Login: Component = () => {
             onInput={(e) => setUsername(e.currentTarget.value)}
             required
             disabled={isLoading()}
-            class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
         
-        <div class="form-group">
-          <label for="password" class="text-gray-800 dark:text-gray-200 font-medium">Password</label>
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Password</label>
           <input
             type="password"
             id="password"
@@ -82,11 +81,11 @@ const Login: Component = () => {
             onInput={(e) => setPassword(e.currentTarget.value)}
             required
             disabled={isLoading()}
-            class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
         
-        <button type="submit" class="w-full mt-4 px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" disabled={isLoading()}>
+        <button type="submit" class="w-full mt-4 px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200" disabled={isLoading()}>
           {isLoading() ? 'Logging in...' : 'Login'}
         </button>
       </form>

@@ -1,7 +1,6 @@
 import { Component, createSignal, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { UserService } from '../services';
-import './BotRegistration.css';
 
 const Registration: Component = () => {
   const [username, setUsername] = createSignal('');
@@ -38,18 +37,18 @@ const Registration: Component = () => {
   };
 
   return (
-    <div class="bot-registration">
+    <div class="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Register New Account</h1>
       
       {success() && (
-        <div class="success-message text-green-600 dark:text-green-400 mb-4">
+        <div class="bg-green-100 border border-green-400 text-green-700 dark:bg-green-900/30 dark:border-green-600 dark:text-green-400 px-4 py-3 rounded mb-4">
           <p class="text-lg font-medium">Registration successful! Redirecting to homepage...</p>
         </div>
       )}
       
-      <form onSubmit={handleSubmit} class="registration-form">
-        <div class="form-group">
-          <label for="username" class="text-gray-800 dark:text-gray-200 font-medium">Username</label>
+      <form onSubmit={handleSubmit} class="space-y-4">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Username</label>
           <input
             type="text"
             id="username"
@@ -57,10 +56,11 @@ const Registration: Component = () => {
             onInput={(e) => setUsername(e.currentTarget.value)}
             required
             disabled={isLoading() || success()}
+            class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        <div class="form-group">
-          <label for="password" class="text-gray-800 dark:text-gray-200 font-medium">Password</label>
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Password</label>
           <input
             type="password"
             id="password"
@@ -68,12 +68,17 @@ const Registration: Component = () => {
             onInput={(e) => setPassword(e.currentTarget.value)}
             required
             disabled={isLoading() || success()}
+            class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        <p class="info-text text-gray-600 dark:text-gray-300">
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">
           Register a new account to participate in chess matches.
         </p>
-        <button type="submit" class="button" disabled={isLoading() || success()}>
+        <button 
+          type="submit" 
+          disabled={isLoading() || success()}
+          class="w-full mt-4 px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           {isLoading() ? 'Registering...' : 'Register'}
         </button>
       </form>

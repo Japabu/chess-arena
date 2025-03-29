@@ -2,14 +2,13 @@ import { Component, createSignal, createEffect, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { UserService } from '../../services/api';
 import { User as ApiUser } from '../../services/api/types';
-import '../../styles/Admin.css';
 
 interface User extends ApiUser {
   username?: string;
   createdAt?: string;
 }
 
-const AdminUsers: Component = () => {
+const Users: Component = () => {
   const [users, setUsers] = createSignal<User[]>([]);
   const [isLoading, setIsLoading] = createSignal(true);
   const [searchQuery, setSearchQuery] = createSignal('');
@@ -59,53 +58,60 @@ const AdminUsers: Component = () => {
   };
   
   return (
-    <div class="admin-users-page">
-      <h1 class="page-title">User Management</h1>
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">User Management</h1>
       
-      <div class="section-card">
-        <div class="search-form">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div class="flex flex-wrap gap-3 mb-6">
           <input 
             type="text" 
             placeholder="Search users by name or ID..."
             value={searchQuery()}
             onInput={(e) => setSearchQuery(e.currentTarget.value)}
+            class="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          <button class="btn btn-primary" onClick={fetchUsers}>
+          <button 
+            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" 
+            onClick={fetchUsers}
+          >
             Refresh
           </button>
         </div>
         
         {isLoading() ? (
-          <div class="loading-indicator">Loading users...</div>
+          <div class="flex justify-center items-center py-8">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500"></div>
+            <span class="ml-3 text-gray-700 dark:text-gray-300">Loading users...</span>
+          </div>
         ) : filteredUsers().length === 0 ? (
-          <div class="empty-state">
+          <div class="text-center py-8 text-gray-700 dark:text-gray-300">
             {searchQuery() ? 'No users match your search.' : 'No users found.'}
           </div>
         ) : (
-          <div class="user-grid">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <For each={filteredUsers()}>
               {(user) => (
-                <div class="user-card">
-                  <div class="user-header">
-                    <div class="user-avatar">
+                <div class="bg-gray-50 dark:bg-gray-750 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div class="p-4 flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-3 font-bold">
                       {(user.username || user.name || '??').substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h3 class="user-name">{user.username || user.name}</h3>
-                      <div class="user-id">ID: {user.id}</div>
+                      <h3 class="font-medium text-gray-900 dark:text-white">{user.username || user.name}</h3>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">ID: {user.id}</div>
                     </div>
                   </div>
                   
-                  <div class="user-info">
-                    <div class="info-item">
-                      <span class="info-label">Registered:</span>
-                      <span class="info-value">{formatDate(user.createdAt)}</span>
+                  <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <div class="flex justify-between">
+                      <span class="text-sm text-gray-500 dark:text-gray-400">Registered:</span>
+                      <span class="text-sm text-gray-900 dark:text-gray-200">{formatDate(user.createdAt)}</span>
                     </div>
                   </div>
                   
-                  <div class="user-actions">
+                  <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
                     <button 
-                      class="btn btn-danger"
+                      class="w-full px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
                       onClick={() => handleDeleteUser(user.id)}
                     >
                       Delete User
@@ -121,4 +127,4 @@ const AdminUsers: Component = () => {
   );
 };
 
-export default AdminUsers; 
+export default Users; 

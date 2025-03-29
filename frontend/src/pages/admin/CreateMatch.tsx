@@ -1,8 +1,6 @@
-import { Component, createSignal, createEffect } from 'solid-js';
+import { Component, createSignal, createEffect, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import '../../styles/Admin.css';
 import { UserService, MatchService } from '../../services/api';
-import type { User as ApiUser } from '../../services/api/types';
 
 interface User {
   id: number;
@@ -105,47 +103,63 @@ const CreateMatch: Component = () => {
   };
   
   return (
-    <div class="create-match-page">
-      <h1 class="page-title">Create New Match</h1>
+    <div class="max-w-3xl mx-auto px-4 py-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Create New Match</h1>
       
-      {error() && <div class="error-message">{error()}</div>}
+      {error() && (
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 dark:bg-red-900/30 dark:text-red-400">
+          {error()}
+        </div>
+      )}
       
-      <div class="section-card">
-        <form class="admin-form" onSubmit={handleCreateMatch}>
-          <h2 class="form-title">Match Details</h2>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <form class="p-6 space-y-6" onSubmit={handleCreateMatch}>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Match Details</h2>
           
-          <div class="form-group">
-            <label for="white-player">White Player</label>
+          <div class="space-y-2">
+            <label for="white-player" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              White Player
+            </label>
             <select 
               id="white-player"
               value={selectedWhiteId() || ''}
               onChange={(e) => setSelectedWhiteId(parseInt(e.currentTarget.value))}
               disabled={isLoading() || isCreating()}
+              class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             >
               <option value="">Select White Player</option>
-              {users().map((user) => (
-                <option value={user.id}>{user.username}</option>
-              ))}
+              <For each={users()}>
+                {(user) => (
+                  <option value={user.id}>{user.username}</option>
+                )}
+              </For>
             </select>
           </div>
           
-          <div class="form-group">
-            <label for="black-player">Black Player</label>
+          <div class="space-y-2">
+            <label for="black-player" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Black Player
+            </label>
             <select 
               id="black-player"
               value={selectedBlackId() || ''}
               onChange={(e) => setSelectedBlackId(parseInt(e.currentTarget.value))}
               disabled={isLoading() || isCreating()}
+              class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             >
               <option value="">Select Black Player</option>
-              {users().map((user) => (
-                <option value={user.id}>{user.username}</option>
-              ))}
+              <For each={users()}>
+                {(user) => (
+                  <option value={user.id}>{user.username}</option>
+                )}
+              </For>
             </select>
           </div>
           
-          <div class="form-group">
-            <label for="custom-fen">Custom Starting Position (FEN) - Optional</label>
+          <div class="space-y-2">
+            <label for="custom-fen" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Custom Starting Position (FEN) - Optional
+            </label>
             <input 
               type="text" 
               id="custom-fen" 
@@ -153,16 +167,17 @@ const CreateMatch: Component = () => {
               onChange={(e) => setCustomFen(e.currentTarget.value)}
               placeholder="Standard starting position will be used if empty"
               disabled={isCreating()}
+              class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             />
-            <div class="form-hint">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
               Example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
             </div>
           </div>
           
-          <div class="form-footer">
+          <div class="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
             <button 
               type="button" 
-              class="btn btn-secondary" 
+              class="px-4 py-2 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors disabled:opacity-50" 
               onClick={() => navigate('/admin/matches')}
               disabled={isCreating()}
             >
@@ -170,7 +185,7 @@ const CreateMatch: Component = () => {
             </button>
             <button 
               type="submit" 
-              class="btn btn-primary"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
               disabled={isLoading() || isCreating() || !selectedWhiteId() || !selectedBlackId()}
             >
               {isCreating() ? 'Creating...' : 'Create Match'}

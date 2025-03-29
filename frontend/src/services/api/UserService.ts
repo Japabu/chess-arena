@@ -8,11 +8,11 @@ export class UserService {
   private static baseUrl = API_URL;
 
   /**
-   * Get all users
+   * Get all users (admin only)
    */
   static async getAllUsers(): Promise<User[]> {
     const token = localStorage.getItem("token");
-    const response = await fetch(`${this.baseUrl}/user`, {
+    const response = await fetch(`${this.baseUrl}/user/admin`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -21,10 +21,28 @@ export class UserService {
   }
 
   /**
+   * Get current authenticated user
+   */
+  static async getCurrentUser(): Promise<User> {
+    const claims = this.getUserClaims();
+
+    if (!claims || !claims.id) {
+      throw new Error("User not authenticated");
+    }
+
+    return this.getUserById(claims.id);
+  }
+
+  /**
    * Get user by ID
    */
   static async getUserById(userId: number): Promise<User> {
-    const response = await fetch(`${this.baseUrl}/user/${userId}`);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${this.baseUrl}/user/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.json();
   }
 
@@ -48,11 +66,11 @@ export class UserService {
   }
 
   /**
-   * Delete a user
+   * Delete a user (admin only)
    */
   static async deleteUser(userId: number): Promise<void> {
     const token = localStorage.getItem("token");
-    await fetch(`${this.baseUrl}/user/${userId}`, {
+    await fetch(`${this.baseUrl}/user/admin/${userId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -83,7 +101,7 @@ export class UserService {
   static async register(
     username: string,
     password: string
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ id: number; username: string }> {
     const response = await fetch(`${this.baseUrl}/user/register`, {
       method: "POST",
       headers: {

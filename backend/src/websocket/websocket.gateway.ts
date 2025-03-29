@@ -68,7 +68,7 @@ export class GameWebSocketGateway implements OnGatewayConnection {
     private userService: UserService,
   ) {
     this.logger.log(
-      `WebSocket enabled with CORS for: ${this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173')}`,
+      `WebSocket enabled with CORS for: ${this.configService.getOrThrow<string>('FRONTEND_URL')}`,
     );
   }
 

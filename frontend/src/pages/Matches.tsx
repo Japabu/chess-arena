@@ -1,6 +1,5 @@
 import { Component, createSignal, Show, onCleanup, onMount, For } from 'solid-js';
 import ChessBoard from '../components/ChessBoard';
-import './Matches.css';
 import { io, Socket } from 'socket.io-client';
 import { Chess } from 'chess.js';
 import { createStore, produce } from 'solid-js/store';
@@ -177,21 +176,22 @@ const Matches: Component = () => {
   };
 
   const getStatusChipClass = (status: MatchStatus) => {
+    const baseClasses = 'inline-block px-3 py-1.5 rounded-full text-xs font-bold uppercase mb-2.5 text-white';
     switch (status) {
       case MatchStatus.PENDING:
-        return 'status-chip pending';
+        return `${baseClasses} bg-amber-600 dark:bg-amber-700`;
       case MatchStatus.IN_PROGRESS:
-        return 'status-chip in-progress';
+        return `${baseClasses} bg-emerald-600 dark:bg-emerald-700`;
       case MatchStatus.WHITE_WON:
-        return 'status-chip white-won';
+        return `${baseClasses} bg-blue-600 dark:bg-blue-700 border-2 border-white`;
       case MatchStatus.BLACK_WON:
-        return 'status-chip black-won';
+        return `${baseClasses} bg-gray-800 dark:bg-gray-900 border-2 border-gray-600`;
       case MatchStatus.DRAW:
-        return 'status-chip draw';
+        return `${baseClasses} bg-purple-600 dark:bg-purple-700`;
       case MatchStatus.ABORTED:
-        return 'status-chip aborted';
+        return `${baseClasses} bg-red-600 dark:bg-red-700`;
       default:
-        return 'status-chip';
+        return baseClasses;
     }
   };
 
@@ -237,66 +237,89 @@ const Matches: Component = () => {
   };
   
   const renderMatchCard = (match: Match) => (
-    <div class="match-card">
-      <h2>Match #{match.id}</h2>
-      
-      <div class={getStatusChipClass(match.status)}>
-        {getStatusDisplayText(match.status)}
+    <div class="bg-gray-800 dark:bg-gray-900 rounded-lg overflow-hidden transition-all duration-200 hover:transform hover:-translate-y-1 hover:shadow-xl border border-gray-700 dark:border-gray-800 cursor-pointer">
+      <div class="bg-gray-700 dark:bg-gray-800 p-4 flex justify-between items-center">
+        <h2 class="text-white font-medium">Match #{match.id}</h2>
       </div>
       
-      <div>{match.white.username} vs {match.black.username}</div>
+      <div class="p-4">
+        <div class={getStatusChipClass(match.status)}>
+          {getStatusDisplayText(match.status)}
+        </div>
+        
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex-1 text-center text-white dark:text-gray-200">
+            {match.white.username}
+          </div>
+          <div class="mx-2 text-lg font-semibold text-gray-400 dark:text-gray-500">
+            vs
+          </div>
+          <div class="flex-1 text-center text-white dark:text-gray-200">
+            {match.black.username}
+          </div>
+        </div>
 
-      <div>
-        <ChessBoard fen={match.fen} />
-      </div>
-      
-      <div class="match-details">
-        <span>Started: {formatDate(match.createdAt)}</span>
+        <div class="flex justify-center mb-4">
+          <ChessBoard fen={match.fen} />
+        </div>
+        
+        <div class="text-sm text-gray-300 dark:text-gray-400 mt-2">
+          Started: {formatDate(match.createdAt)}
+        </div>
       </div>
     </div>
   );
   
   return (
-    <div class="matches-page">
-      <h1>Chess Arena Matches</h1>
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <h1 class="text-3xl font-bold text-gray-100 dark:text-white mb-6">Chess Arena Matches</h1>
       
       <Show when={isConnected()}>
-        <div class="connection-status connected">WebSocket Connected</div>
+        <div class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-green-500 text-white mb-4">
+          WebSocket Connected
+        </div>
       </Show>
       
       <Show when={!isConnected() && !isLoading()}>
-        <div class="connection-status disconnected">WebSocket Disconnected - Using cached data</div>
+        <div class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-red-500 text-white mb-4">
+          WebSocket Disconnected - Using cached data
+        </div>
       </Show>
       
       <Show when={isLoading()}>
-        <p class="text-gray-200 dark:text-gray-200">Loading matches...</p>
+        <div class="flex justify-center items-center py-8">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500"></div>
+          <span class="ml-3 text-gray-200 dark:text-gray-200">Loading matches...</span>
+        </div>
       </Show>
       
       <Show when={error()}>
-        <div class="error-message">{error()}</div>
+        <div class="bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded mb-4">
+          {error()}
+        </div>
       </Show>
       
-      <h2>Active Matches</h2>
+      <h2 class="text-2xl font-bold text-gray-100 dark:text-white mt-8 mb-4 border-b border-gray-700 pb-2">Active Matches</h2>
       
       <Show when={!isLoading() && !error() && getActiveMatches().length === 0}>
         <p class="text-gray-200 dark:text-gray-200 py-4">No matches are currently active.</p>
       </Show>
       
-      <div class="matches-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <For each={getActiveMatches()}>
           {match => renderMatchCard(match)}
         </For>
       </div>
       
-      <h2>Match History</h2>
+      <h2 class="text-2xl font-bold text-gray-100 dark:text-white mt-8 mb-4 border-b border-gray-700 pb-2">Match History</h2>
       
-      <div class="search-container">
+      <div class="mb-6">
         <input 
           type="text" 
           placeholder="Search by player name, match ID, or date..." 
           value={searchTerm()} 
           onInput={(e) => setSearchTerm(e.currentTarget.value)}
-          class="search-input"
+          class="w-full max-w-lg px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
       
@@ -304,7 +327,7 @@ const Matches: Component = () => {
         <p class="text-gray-200 dark:text-gray-200 py-4">No completed matches found.</p>
       </Show>
       
-      <div class="matches-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <For each={getMatchHistory()}>
           {match => renderMatchCard(match)}
         </For>

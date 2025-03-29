@@ -1,6 +1,5 @@
 import { Component, createSignal, createResource, createEffect, For, Show } from 'solid-js';
 import { useParams } from '@solidjs/router';
-import '../styles/TournamentDetails.css';
 
 interface User {
   id: number;
@@ -146,16 +145,16 @@ const TournamentDetails: Component = () => {
     
     switch (status) {
       case 'pending':
-        return 'match-pending';
+        return 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800';
       case 'in_progress':
-        return 'match-in-progress';
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800';
       case 'white_won':
       case 'black_won':
-        return 'match-completed';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800';
       case 'draw':
-        return 'match-draw';
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800';
       default:
-        return '';
+        return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-800';
     }
   };
 
@@ -178,124 +177,60 @@ const TournamentDetails: Component = () => {
   const [isAdmin, setIsAdmin] = createSignal(true); // Set to true for demo purposes
 
   return (
-    <div class="tournament-details-container">
+    <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <Show when={tournament() && bracket()}>
-        <div class="tournament-header">
-          <h1>{tournament()?.name}</h1>
-          <div class={`status-badge ${tournament()?.status.replace('_', '-')}`}>
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4 md:mb-0">{tournament()?.name}</h1>
+          <div class={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${tournament()?.status === 'registration' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800' : tournament()?.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800' : tournament()?.status === 'completed' ? 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-800' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800'}`}>
             {tournament()?.status.replace('_', ' ')}
           </div>
         </div>
 
-        <div class="description-section">
-          <p class="description">{tournament()?.description || 'No description provided'}</p>
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-8">
+          <p class="text-gray-700 dark:text-gray-300 mb-6">{tournament()?.description || 'No description provided'}</p>
           
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="label">Format:</span>
-              <span class="value">{tournament()?.format.replace('_', ' ')}</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Format:</span>
+              <span class="text-gray-900 dark:text-white font-medium">{tournament()?.format.replace('_', ' ')}</span>
             </div>
             
-            <div class="info-item">
-              <span class="label">Status:</span>
-              <span class="value">{tournament()?.status.replace('_', ' ')}</span>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Status:</span>
+              <span class="text-gray-900 dark:text-white font-medium">{tournament()?.status.replace('_', ' ')}</span>
             </div>
             
-            <div class="info-item">
-              <span class="label">Start Date:</span>
-              <span class="value">{formatDate(tournament()?.startDate)}</span>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Participants:</span>
+              <span class="text-gray-900 dark:text-white font-medium">{tournament()?.participants.length} / {tournament()?.maxParticipants}</span>
             </div>
             
-            <div class="info-item">
-              <span class="label">End Date:</span>
-              <span class="value">{formatDate(tournament()?.endDate)}</span>
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Start Date:</span>
+              <span class="text-gray-900 dark:text-white font-medium">{formatDate(tournament()?.startDate)}</span>
+            </div>
+            
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">End Date:</span>
+              <span class="text-gray-900 dark:text-white font-medium">{formatDate(tournament()?.endDate)}</span>
+            </div>
+            
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Created:</span>
+              <span class="text-gray-900 dark:text-white font-medium">{formatDate(tournament()?.createdAt)}</span>
             </div>
           </div>
-        </div>
-
-        <Show when={tournament()?.status === 'registration' && isAdmin()}>
-          <div class="admin-section">
-            <h2>Admin Actions</h2>
-            <div class="admin-actions">
+          
+          <Show when={isAdmin() && tournament()?.status === 'registration'}>
+            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <button 
-                class="button primary"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
                 onClick={startTournament}
               >
                 Start Tournament
               </button>
             </div>
-          </div>
-        </Show>
-
-        <div class="tournament-content">
-          <div class="participants-sidebar">
-            <div class="info-section">
-              <h2>Participants ({tournament()?.participants.length})</h2>
-              <div class="participants-list-vertical">
-                <For each={tournament()?.participants}>
-                  {(participant) => (
-                    <div class="participant">{participant.name}</div>
-                  )}
-                </For>
-              </div>
-            </div>
-          </div>
-
-          <div class="tournament-main-content">
-            <Show when={bracket() && tournament()?.status !== 'registration'}>
-              <div class="tournament-bracket">
-                <h2>Tournament Bracket</h2>
-                
-                <div class="bracket-visualization">
-                  <For each={bracket()?.rounds}>
-                    {(round) => (
-                      <div class="round">
-                        <div class="round-header">Round {round.round}</div>
-                        <div class="matches">
-                          <For each={round.matches}>
-                            {(match) => (
-                              <div class={`match ${getStatusColor(match.status)}`}>
-                                <div class="match-number">Match {match.matchNumber}</div>
-                                <div class="match-players">
-                                  <div 
-                                    class={`player ${match.winner === match.player1?.id ? 'winner' : ''}`}
-                                  >
-                                    {match.player1?.name || 'TBD'}
-                                  </div>
-                                  <div class="vs">vs</div>
-                                  <div 
-                                    class={`player ${match.winner === match.player2?.id ? 'winner' : ''}`}
-                                  >
-                                    {match.player2?.name || 'TBD'}
-                                  </div>
-                                </div>
-                                <Show when={match.matchId}>
-                                  <a 
-                                    href={`/matches/${match.matchId}`} 
-                                    class="view-match"
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                  >
-                                    View Match
-                                  </a>
-                                </Show>
-                              </div>
-                            )}
-                          </For>
-                        </div>
-                      </div>
-                    )}
-                  </For>
-                </div>
-              </div>
-            </Show>
-            
-            <Show when={tournament()?.status === 'registration'}>
-              <div class="tournament-status-message">
-                <p>Tournament is in registration phase. The bracket will be displayed once the tournament begins.</p>
-              </div>
-            </Show>
-          </div>
+          </Show>
         </div>
       </Show>
     </div>
