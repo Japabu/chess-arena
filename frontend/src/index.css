@@ -1,78 +1,141 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-  margin-bottom: 1rem;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-
-button:hover {
-  border-color: #646cff;
-}
-
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@layer base {
+  body {
+    @apply bg-primary-bg text-primary-text min-h-screen min-w-[320px];
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-primary-text leading-tight mb-md;
+  }
+
+  h1 {
+    @apply text-[2.5rem] leading-[1.1];
+  }
+
+  h2 {
+    @apply text-[2rem];
+  }
+
+  h3 {
+    @apply text-[1.5rem];
+  }
+
+  p {
+    @apply mb-md;
+  }
+
+  a {
+    @apply font-medium text-accent-primary no-underline;
+  }
+
   a:hover {
-    color: #747bff;
+    @apply text-accent-primary-hover;
   }
-  
+
   button {
-    background-color: #f9f9f9;
+    @apply rounded-sm border border-transparent py-sm px-md text-base font-medium font-inherit
+           bg-tertiary-bg text-primary-text cursor-pointer transition-colors;
+  }
+
+  button:hover {
+    @apply border-accent-primary bg-elevated-bg;
+  }
+
+  button:focus,
+  button:focus-visible {
+    @apply outline outline-4 outline-accent-primary;
+  }
+
+  input, textarea, select {
+    @apply py-sm px-md rounded-sm border border-border bg-secondary-bg text-primary-text 
+           font-inherit text-base;
+  }
+}
+
+@layer components {
+  .app-container {
+    @apply min-h-screen flex flex-col bg-primary-bg text-primary-text;
+  }
+
+  .main-content {
+    @apply flex-1 px-xl max-w-[1200px] mx-auto w-full;
+  }
+
+  .button {
+    @apply inline-block py-sm px-md bg-tertiary-bg text-primary-text border border-transparent
+           rounded-sm text-base font-medium font-inherit cursor-pointer transition-colors;
+  }
+
+  .button:hover {
+    @apply bg-elevated-bg border-accent-primary;
+  }
+
+  .button.primary {
+    @apply bg-accent-primary text-white;
+  }
+
+  .button.primary:hover {
+    @apply bg-accent-primary-hover;
+  }
+
+  .card {
+    @apply bg-secondary-bg rounded-lg p-lg shadow-md mb-lg;
+  }
+
+  .status-badge {
+    @apply inline-block py-xs px-sm rounded-round text-sm font-semibold uppercase;
+  }
+
+  .status-badge.pending {
+    @apply bg-[#1a3a6c] text-accent-primary;
+  }
+
+  .status-badge.in-progress {
+    @apply bg-[#1b3e2c] text-accent-secondary;
+  }
+
+  .status-badge.completed {
+    @apply bg-[#14373a] text-[#80cbc4];
+  }
+
+  .status-badge.cancelled {
+    @apply bg-[#3e1c26] text-[#ef9a9a];
+  }
+
+  .error-message {
+    @apply bg-[#3e1c26] border border-[#ef9a9a] text-[#ef9a9a] rounded-sm p-md mb-lg;
+  }
+
+  .loading-spinner {
+    @apply flex justify-center items-center min-h-[200px] text-secondary-text;
+  }
+}
+
+@layer utilities {
+  .text-center { @apply text-center; }
+  .text-left { @apply text-left; }
+  .text-right { @apply text-right; }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    @apply px-md;
+  }
+
+  h1 {
+    @apply text-[2rem];
+  }
+
+  h2 {
+    @apply text-[1.75rem];
   }
 }

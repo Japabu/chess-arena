@@ -2,7 +2,6 @@ import { Component } from 'solid-js';
 import { Router, Route } from '@solidjs/router';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import './App.css';
 import BotRegistration from './pages/BotRegistration';
 import Matches from './pages/Matches';
 import AdminLogin from './pages/AdminLogin';

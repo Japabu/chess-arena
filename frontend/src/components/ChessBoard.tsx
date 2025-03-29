@@ -1,6 +1,5 @@
 import { Component, createEffect, createSignal } from 'solid-js';
 import { Chess, Square } from 'chess.js';
-import './ChessBoard.css';
 
 interface ChessBoardProps {
   fen: string;
@@ -32,7 +31,7 @@ const ChessBoard: Component<ChessBoardProps> = (props) => {
   
   const renderSquare = (row: number, col: number) => {
     const isLightSquare = (row + col) % 2 === 0;
-    const squareClass = isLightSquare ? 'light-square' : 'dark-square';
+    const squareClass = isLightSquare ? 'bg-[#f0d9b5]' : 'bg-[#b58863]';
     const squareNotation = String.fromCharCode(97 + col) + (8 - row) as Square;
     
     let pieceClass = '';
@@ -44,8 +43,13 @@ const ChessBoard: Component<ChessBoardProps> = (props) => {
     }
     
     return (
-      <div class={`square ${squareClass}`} data-square={squareNotation}>
-        {pieceClass && <div class={`piece ${pieceClass}`}></div>}
+      <div class={`relative flex-1 flex justify-center items-center ${squareClass}`} data-square={squareNotation}>
+        {pieceClass && (
+          <div 
+            class="w-full h-full bg-center bg-no-repeat bg-[length:85%] select-none" 
+            style={{ "background-image": `url('/assets/pieces/${pieceClass}.svg')` }}
+          ></div>
+        )}
       </div>
     );
   };
@@ -58,14 +62,17 @@ const ChessBoard: Component<ChessBoardProps> = (props) => {
       for (let col = 0; col < 8; col++) {
         squareRow.push(renderSquare(row, col));
       }
-      board.push(<div class="board-row">{squareRow}</div>);
+      board.push(<div class="flex flex-1">{squareRow}</div>);
     }
     
     return board;
   };
   
   return (
-    <div class="chess-board" style={{ width: `${boardSize()}px`, height: `${boardSize()}px` }}>
+    <div 
+      class="flex flex-col border border-border shadow-md my-lg mx-auto relative"
+      style={{ width: `${boardSize()}px`, height: `${boardSize()}px` }}
+    >
       {renderBoard()}
     </div>
   );

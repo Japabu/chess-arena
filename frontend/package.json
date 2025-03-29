@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.15.3",
+    "@tailwindcss/vite": "^4.0.17",
     "@types/chess.js": "^0.13.7",
     "chess.js": "^1.1.0",
     "socket.io-client": "^4.8.1",
-    "solid-js": "^1.9.5"
+    "solid-js": "^1.9.5",
+    "tailwindcss": "^4.0.17"
   },
   "devDependencies": {
     "typescript": "~5.7.2",
