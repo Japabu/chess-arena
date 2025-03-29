@@ -1,6 +1,7 @@
 import { Component, createSignal, createEffect } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
+import { useNavigate, useParams } from '@solidjs/router';
 import { UserService } from '../services';
+import { AuthStore } from '../services/auth.store';
 import { User as ApiUser } from '../services/api/types';
 
 interface UserProfile extends ApiUser {
@@ -10,6 +11,7 @@ interface UserProfile extends ApiUser {
 
 const Profile: Component = () => {
   const navigate = useNavigate();
+  const params = useParams();
   const [userData, setUserData] = createSignal<UserProfile>({
     id: 0,
     name: '',
@@ -19,18 +21,14 @@ const Profile: Component = () => {
   const [isLoading, setIsLoading] = createSignal(true);
 
   createEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
     fetchUserData();
   });
 
   const fetchUserData = async () => {
     setIsLoading(true);
-    const user = await UserService.getCurrentUser();
+    
+    const userId = parseInt(params.userId);
+    const user = await UserService.getUserById(userId);
     
     setUserData({
       ...user,
@@ -50,9 +48,16 @@ const Profile: Component = () => {
     }).format(date);
   };
 
+  const getInitial = () => {
+    const name = userData().name || '';
+    return name.charAt(0).toUpperCase() || '?';
+  };
+
   return (
     <div class="max-w-4xl mx-auto px-4 py-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Your Profile</h1>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+        User Profile
+      </h1>
 
       {isLoading() ? (
         <div class="flex justify-center items-center py-8">
@@ -63,11 +68,11 @@ const Profile: Component = () => {
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
           <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center">
-              <div class="w-16 h-16 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold mr-4">
-                {userData().name?.charAt(0).toUpperCase()}
+              <div class="w-16 h-16 flex-shrink-0 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold mr-4">
+                {getInitial()}
               </div>
               <div>
-                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">{userData().name}</h2>
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">{userData().name || 'Unknown User'}</h2>
                 <p class="text-gray-600 dark:text-gray-400">User ID: {userData().id}</p>
               </div>
             </div>
@@ -110,14 +115,16 @@ const Profile: Component = () => {
               </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <button 
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-                onClick={() => navigate('/settings')}
-              >
-                Edit Profile
-              </button>
-            </div>
+            {userData().id === AuthStore.authUser()?.id && (
+              <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <button 
+                  class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                  onClick={() => navigate('/settings')}
+                >
+                  Edit Profile
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

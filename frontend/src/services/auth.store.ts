@@ -22,46 +22,29 @@ createEffect(() => {
 async function checkAuthStatus() {
   setIsLoading(true);
 
-  try {
-    const claims = UserService.getUserClaims();
+  const claims = UserService.getUserClaims();
 
-    if (claims && claims.id) {
-      // User is authenticated
-      setIsAuthenticated(true);
+  if (claims && claims.id) {
+    // User is authenticated
+    setIsAuthenticated(true);
 
-      try {
-        const user = await UserService.getUserById(claims.id);
-        setAuthUser(user);
-        setIsAdmin(claims.roles.includes("admin"));
-      } catch (error) {
-        // Error loading user details
-        console.error("Error loading user details:", error);
-        logout();
-      }
-    } else {
-      // No valid token
-      logout();
-    }
-  } catch (error) {
-    // Error checking auth status
-    console.error("Error checking auth status:", error);
+    const user = await UserService.getUserById(claims.id);
+    setAuthUser(user);
+    setIsAdmin(claims.roles.includes("admin"));
+  } else {
+    // No valid token
     logout();
-  } finally {
-    setIsLoading(false);
   }
+
+  setIsLoading(false);
 }
 
 // Login function
 async function login(username: string, password: string) {
-  try {
-    const response = await UserService.login(username, password);
-    localStorage.setItem("token", response.access_token);
-    await checkAuthStatus();
-    return true;
-  } catch (error) {
-    console.error("Login error:", error);
-    return false;
-  }
+  const response = await UserService.login(username, password);
+  localStorage.setItem("token", response.access_token);
+  await checkAuthStatus();
+  return true;
 }
 
 // Logout function

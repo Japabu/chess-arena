@@ -6,7 +6,6 @@ const Login: Component = () => {
   const [username, setUsername] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [isLoading, setIsLoading] = createSignal(false);
-  const [error, setError] = createSignal('');
   const navigate = useNavigate();
   
   createEffect(() => {
@@ -22,38 +21,24 @@ const Login: Component = () => {
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
     
-    try {
-      const success = await AuthStore.login(username(), password());
-      
-      if (success) {
-        // Redirect based on user role
-        if (AuthStore.isAdmin()) {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/');
-        }
+    const success = await AuthStore.login(username(), password());
+    
+    if (success) {
+      // Redirect based on user role
+      if (AuthStore.isAdmin()) {
+        navigate('/admin/dashboard');
       } else {
-        setError('Login failed. Please try again.');
+        navigate('/');
       }
-    } catch (error) {
-      console.error('Login failed:', error);
-      setError('Invalid username or password. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
+    
+    setIsLoading(false);
   };
 
   return (
     <div class="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Login</h1>
-      
-      {error() && (
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error()}
-        </div>
-      )}
       
       <form onSubmit={handleSubmit} class="space-y-4">
         <div>

@@ -8,3 +8,6 @@ export { API_URL } from "./config";
 export { TournamentService } from "./TournamentService";
 export { UserService } from "./UserService";
 export { MatchService } from "./MatchService";
+
+// Export WebSocket functionality
+export { socket } from "./socket";

@@ -1,11 +1,11 @@
-import { Component, createSignal, Show, onCleanup, onMount, For } from 'solid-js';
-import ChessBoard from '../components/ChessBoard';
-import { io, Socket } from 'socket.io-client';
-import { Chess } from 'chess.js';
+import { Component, createSignal, onMount, onCleanup, For } from 'solid-js';
 import { createStore, produce } from 'solid-js/store';
-import { MatchService, API_URL } from '../services/api';
+import { socket, MatchService } from '../services/api';
+import { Chess } from 'chess.js';
+import ChessBoard from '../components/ChessBoard';
 
-enum MatchStatus {
+// Match statuses
+export enum MatchStatus {
   PENDING = 'pending',
   IN_PROGRESS = 'in_progress',
   WHITE_WON = 'white_won',
@@ -14,80 +14,80 @@ enum MatchStatus {
   ABORTED = 'aborted',
 }
 
+// Match type
 interface Match {
   id: number;
-  white: { id: number; username: string };
-  black: { id: number; username: string };
+  white: {
+    id: number;
+    username: string;
+  };
+  black: {
+    id: number;
+    username: string;
+  };
+  fen: string;
+  status: MatchStatus;
   createdAt: string;
-  status: MatchStatus;
-  fen: string;
 }
 
+// Response from the join match request
 interface JoinResponse {
-  success: boolean;
-  status: MatchStatus;
+  status: string;
   fen: string;
+  message?: string;
 }
 
+// Game state update from WebSocket
 interface GameStateUpdate {
   matchId: number;
-  status: MatchStatus;
+  status?: MatchStatus;
   move?: string;
 }
 
-function emitAsync<T>(socket: Socket, event: string, ...args: any[]): Promise<T> {
-  return new Promise((resolve, reject) => {
-    if (!socket) {
-      reject(new Error('Socket not connected'));
-      return;
-    }
-
-    socket.emit(event, ...args, (response: T) => {
-      resolve(response);
-    });
-  });
-}
+// Store to hold chess.js instances for each match
+const chessStates: Record<number, Chess> = {};
 
 const Matches: Component = () => {
-  const [matches, setMatches] = createStore<{ [key: number]: Match }>({});
+  const [matches, setMatches] = createStore<Record<number, Match>>({});
   const [isLoading, setIsLoading] = createSignal(true);
-  const [error, setError] = createSignal('');
-  const [searchTerm, setSearchTerm] = createSignal('');
   const [isConnected, setIsConnected] = createSignal(false);
-  const [socket, setSocket] = createSignal<Socket | null>(null);
+  
+  const getActiveMatches = () => {
+    return Object.values(matches).filter(match => 
+      match.status === MatchStatus.PENDING || 
+      match.status === MatchStatus.IN_PROGRESS
+    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  };
 
-  const chessStates: { [key: number]: Chess } = {};
-
+  const getMatchHistory = () => {
+    return Object.values(matches).filter(match => 
+      match.status === MatchStatus.WHITE_WON || 
+      match.status === MatchStatus.BLACK_WON || 
+      match.status === MatchStatus.DRAW || 
+      match.status === MatchStatus.ABORTED
+    ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  };
+  
   onMount(async () => {    
     await fetchInitialData();
+
+    // Connect to WebSocket
+    const socketInstance = socket();
+    setIsConnected(socketInstance.connected);
     
-    const socketInstance = io(API_URL);
-    setSocket(socketInstance);
-    
-    socketInstance.on('connect', async () => {
-      console.log(`WebSocket connected, socket.id: ${socketInstance.id}`);
+    // Socket event handlers
+    socketInstance.on('connect', () => {
+      console.log('WebSocket connected');
       setIsConnected(true);
-      
-      const activeMatchIds = getActiveMatches().map((match: Match) => match.id);
-      console.log(`Auto-joining ${activeMatchIds.length} active matches`);
-      
-      for (const matchId of activeMatchIds) {
-          console.log(`Emitting join for match ID: ${matchId}`);
-          const response = await emitAsync<JoinResponse>(socketInstance, 'join', matchId);
-          if (response.success && response.fen) {
-            updateMatchFromJoin(matchId, response);
-          }
-      }
     });
     
-    socketInstance.on('disconnect', (reason: string) => {
-      console.log(`WebSocket disconnected, reason: ${reason}`);
+    socketInstance.on('disconnect', () => {
+      console.log('WebSocket disconnected');
       setIsConnected(false);
     });
     
-    socketInstance.on('error', (error: Error) => {
+    socketInstance.on('error', (error: any) => {
       console.error('WebSocket error:', error);
-      setError(`WebSocket error: ${error.message || 'Unknown error'}`);
     });
     
     // Listen for match updates
@@ -101,7 +101,10 @@ const Matches: Component = () => {
           return matches;
         }
 
-        match.status = data.status;
+        if (data.status) {
+          match.status = data.status;
+        }
+        
         if (data.move) {
             chessStates[data.matchId].move(data.move);
             match.fen = chessStates[data.matchId].fen();
@@ -119,110 +122,60 @@ const Matches: Component = () => {
     }
   });
   
-  // Update match data from join response
-  const updateMatchFromJoin = (matchId: number, response: JoinResponse) => {
-    setMatches(produce(matches => {
-      const match = matches[matchId];
-      if (!match) {
-        console.error(`Received join response for unknown match ID: ${matchId}`);
-        return matches;
-      }
-      
-      match.fen = response.fen;
-      match.status = response.status;
-      chessStates[matchId] = new Chess(response.fen);
-    }));
-  };
-  
   // Fetch initial data from REST endpoint
   const fetchInitialData = async () => {
-    try {
-      setIsLoading(true);
-      
-      const data = await MatchService.getAllMatches();
+    setIsLoading(true);
+    
+    const data = await MatchService.getAllMatches();
 
-      const matches: { [key: number]: Match } = {};
-      for (const match of data) {
-        // TournamentMatch doesn't have all Match properties, so we need to add defaults
-        const matchId = match.matchId || 0;
-        matches[matchId] = {
-          id: matchId,
-          black: {
-            id: match.player2?.id || 0,
-            username: match.player2?.name || 'Unknown'
-          },
-          white: {
-            id: match.player1?.id || 0,
-            username: match.player1?.name || 'Unknown'
-          },
-          fen: (match as any).fen || '',  // Not in TournamentMatch type, cast as any
-          createdAt: (match as any).createdAt || new Date().toISOString(),  // Not in TournamentMatch type, cast as any
-          status: (match.status as MatchStatus) || MatchStatus.PENDING
-        };
-      }
-      
-      setMatches(matches);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while fetching matches');
-      console.error('Error fetching matches:', err);
-    } finally {
-      setIsLoading(false);
+    const matches: { [key: number]: Match } = {};
+    for (const match of data) {
+      // TournamentMatch doesn't have all Match properties, so we need to add defaults
+      const matchId = match.matchId || 0;
+      matches[matchId] = {
+        id: matchId,
+        black: {
+          id: match.player2?.id || 0,
+          username: match.player2?.name || 'Unknown'
+        },
+        white: {
+          id: match.player1?.id || 0,
+          username: match.player1?.name || 'Unknown'
+        },
+        fen: (match as any).fen || '',  // Not in TournamentMatch type, cast as any
+        createdAt: (match as any).createdAt || new Date().toISOString(),  // Not in TournamentMatch type, cast as any
+        status: (match.status as MatchStatus) || MatchStatus.PENDING
+      };
     }
+    
+    setMatches(matches);
+    setIsLoading(false);
   };
   
   // Format date for display
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
-
+  
+  // Get CSS classes for status chip
   const getStatusChipClass = (status: MatchStatus) => {
-    const baseClasses = 'inline-block px-3 py-1.5 rounded-full text-xs font-bold uppercase mb-2.5 text-white';
+    let baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+    
     switch (status) {
       case MatchStatus.PENDING:
-        return `${baseClasses} bg-amber-600 dark:bg-amber-700`;
+        return `${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300`;
       case MatchStatus.IN_PROGRESS:
-        return `${baseClasses} bg-emerald-600 dark:bg-emerald-700`;
+        return `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300`;
       case MatchStatus.WHITE_WON:
-        return `${baseClasses} bg-blue-600 dark:bg-blue-700 border-2 border-white`;
       case MatchStatus.BLACK_WON:
-        return `${baseClasses} bg-gray-800 dark:bg-gray-900 border-2 border-gray-600`;
+        return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300`;
       case MatchStatus.DRAW:
-        return `${baseClasses} bg-purple-600 dark:bg-purple-700`;
+        return `${baseClasses} bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300`;
       case MatchStatus.ABORTED:
-        return `${baseClasses} bg-red-600 dark:bg-red-700`;
+        return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300`;
       default:
-        return baseClasses;
+        return `${baseClasses} bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300`;
     }
-  };
-
-  const getActiveMatches = () => {
-    return Object.values(matches).filter(match => 
-      match.status === MatchStatus.PENDING || 
-      match.status === MatchStatus.IN_PROGRESS
-    );
-  };
-
-  const getMatchHistory = () => {
-    const completedMatches = Object.values(matches).filter(match => 
-      match.status === MatchStatus.WHITE_WON || 
-      match.status === MatchStatus.BLACK_WON || 
-      match.status === MatchStatus.DRAW ||
-      match.status === MatchStatus.ABORTED
-    );
-    
-    if (!searchTerm()) {
-      return completedMatches;
-    }
-    
-    // Search by player name, match id, date, or status
-    const term = searchTerm().toLowerCase();
-    return completedMatches.filter(match => 
-      match.id.toString().includes(term) ||
-      match.white.username.toLowerCase().includes(term) ||
-      match.black.username.toLowerCase().includes(term) ||
-      formatDate(match.createdAt).toLowerCase().includes(term) ||
-      match.status.toLowerCase().includes(term)
-    );
   };
   
   const getStatusDisplayText = (status: MatchStatus) => {
@@ -274,36 +227,30 @@ const Matches: Component = () => {
     <div class="max-w-7xl mx-auto px-4 py-8">
       <h1 class="text-3xl font-bold text-gray-100 dark:text-white mb-6">Chess Arena Matches</h1>
       
-      <Show when={isConnected()}>
+      {isConnected() && (
         <div class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-green-500 text-white mb-4">
           WebSocket Connected
         </div>
-      </Show>
+      )}
       
-      <Show when={!isConnected() && !isLoading()}>
+      {!isConnected() && !isLoading() && (
         <div class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-red-500 text-white mb-4">
           WebSocket Disconnected - Using cached data
         </div>
-      </Show>
+      )}
       
-      <Show when={isLoading()}>
+      {isLoading() && (
         <div class="flex justify-center items-center py-8">
           <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500"></div>
           <span class="ml-3 text-gray-200 dark:text-gray-200">Loading matches...</span>
         </div>
-      </Show>
-      
-      <Show when={error()}>
-        <div class="bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded mb-4">
-          {error()}
-        </div>
-      </Show>
+      )}
       
       <h2 class="text-2xl font-bold text-gray-100 dark:text-white mt-8 mb-4 border-b border-gray-700 pb-2">Active Matches</h2>
       
-      <Show when={!isLoading() && !error() && getActiveMatches().length === 0}>
+      {!isLoading() && getActiveMatches().length === 0 && (
         <p class="text-gray-200 dark:text-gray-200 py-4">No matches are currently active.</p>
-      </Show>
+      )}
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <For each={getActiveMatches()}>
@@ -313,19 +260,9 @@ const Matches: Component = () => {
       
       <h2 class="text-2xl font-bold text-gray-100 dark:text-white mt-8 mb-4 border-b border-gray-700 pb-2">Match History</h2>
       
-      <div class="mb-6">
-        <input 
-          type="text" 
-          placeholder="Search by player name, match ID, or date..." 
-          value={searchTerm()} 
-          onInput={(e) => setSearchTerm(e.currentTarget.value)}
-          class="w-full max-w-lg px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
-      
-      <Show when={!isLoading() && !error() && getMatchHistory().length === 0}>
+      {!isLoading() && getMatchHistory().length === 0 && (
         <p class="text-gray-200 dark:text-gray-200 py-4">No completed matches found.</p>
-      </Show>
+      )}
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <For each={getMatchHistory()}>

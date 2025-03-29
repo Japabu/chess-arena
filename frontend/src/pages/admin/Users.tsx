@@ -1,5 +1,5 @@
 import { Component, createSignal, createEffect, For } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
+import { useNavigate, A } from '@solidjs/router';
 import { UserService } from '../../services/api';
 import { User as ApiUser } from '../../services/api/types';
 
@@ -92,15 +92,17 @@ const Users: Component = () => {
             <For each={filteredUsers()}>
               {(user) => (
                 <div class="bg-gray-50 dark:bg-gray-750 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
-                  <div class="p-4 flex items-center">
-                    <div class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-3 font-bold">
-                      {(user.username || user.name || '??').substring(0, 2).toUpperCase()}
+                  <A href={`/profile/${user.id}`} class="block hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <div class="p-4 flex items-center">
+                      <div class="w-12 h-12 rounded-full bg-indigo-600 text-white flex-shrink-0 flex items-center justify-center mr-3 font-bold">
+                        {(user.username || user.name || '??').substring(0, 1).toUpperCase()}
+                      </div>
+                      <div>
+                        <h3 class="font-medium text-gray-900 dark:text-white">{user.username || user.name}</h3>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">ID: {user.id}</div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 class="font-medium text-gray-900 dark:text-white">{user.username || user.name}</h3>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">ID: {user.id}</div>
-                    </div>
-                  </div>
+                  </A>
                   
                   <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                     <div class="flex justify-between">
@@ -110,12 +112,20 @@ const Users: Component = () => {
                   </div>
                   
                   <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
-                    <button 
-                      class="w-full px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                      onClick={() => handleDeleteUser(user.id)}
-                    >
-                      Delete User
-                    </button>
+                    <div class="flex gap-2">
+                      <A 
+                        href={`/profile/${user.id}`}
+                        class="flex-1 px-3 py-1.5 bg-indigo-600 text-white rounded text-center hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        View Profile
+                      </A>
+                      <button 
+                        class="flex-1 px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                        onClick={() => handleDeleteUser(user.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

@@ -20,6 +20,10 @@ const routes: RouteDefinition[] = [
     component: lazy(() => import('./pages/Profile')),
   },
   {
+    path: '/profile/:userId',
+    component: lazy(() => import('./pages/Profile')),
+  },
+  {
     path: '/matches',
     component: lazy(() => import('./pages/Matches')),
   },

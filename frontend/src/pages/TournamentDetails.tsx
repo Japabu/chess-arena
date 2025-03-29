@@ -1,4 +1,5 @@
-import { Component, createSignal, Show } from 'solid-js';
+import { Component, createSignal, Show, For } from 'solid-js';
+import { A } from '@solidjs/router';
 
 interface User {
   id: number;
@@ -200,6 +201,29 @@ const TournamentDetails: Component = () => {
             </div>
           </div>
           
+          <div class="mt-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">Participants</h3>
+            <div class="bg-gray-50 dark:bg-gray-750 rounded-lg p-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <For each={tournament()?.participants}>
+                  {(participant) => (
+                    <A 
+                      href={`/profile/${participant.id}`}
+                      class="flex items-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-600"
+                    >
+                      <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-3 flex-shrink-0 font-medium">
+                        {participant.name.substring(0, 1).toUpperCase()}
+                      </div>
+                      <span class="text-gray-900 dark:text-white font-medium truncate">
+                        {participant.name}
+                      </span>
+                    </A>
+                  )}
+                </For>
+              </div>
+            </div>
+          </div>
+          
           <Show when={isAdmin() && tournament()?.status === 'registration'}>
             <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <button 
@@ -210,6 +234,100 @@ const TournamentDetails: Component = () => {
               </button>
             </div>
           </Show>
+        </div>
+      </Show>
+
+      <Show when={tournament() && bracket() && tournament()?.status !== 'registration'}>
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Tournament Bracket</h2>
+          
+          <div class="flex flex-col space-y-8">
+            <For each={bracket()?.rounds}>
+              {(round) => (
+                <div>
+                  <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    Round {round.round}
+                  </h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <For each={round.matches}>
+                      {(match) => (
+                        <div class="bg-gray-50 dark:bg-gray-750 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                          <div class="flex justify-between items-center mb-3">
+                            <div class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                              Match #{match.matchNumber}
+                            </div>
+                            <div class={`text-sm font-medium px-2 py-1 rounded ${
+                              match.status === 'pending' ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' :
+                              match.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' :
+                              match.status === 'completed' || match.status === 'white_won' || match.status === 'black_won' || match.status === 'draw' ?
+                              'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                              'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                            }`}>
+                              {match.status?.replace('_', ' ') || 'Pending'}
+                            </div>
+                          </div>
+                          
+                          <div class="flex flex-col space-y-3">
+                            <Show when={match.player1} fallback={
+                              <div class="flex items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <div class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center mr-3">
+                                  <span class="text-gray-500 dark:text-gray-400">?</span>
+                                </div>
+                                <span class="text-gray-500 dark:text-gray-400 italic">TBD</span>
+                              </div>
+                            }>
+                              <A 
+                                href={`/profile/${match.player1?.id}`}
+                                class={`flex items-center p-2 ${match.winner === match.player1?.id ? 'bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'} rounded-lg`}
+                              >
+                                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-3 flex-shrink-0">
+                                  {match.player1?.name.substring(0, 1).toUpperCase()}
+                                </div>
+                                <span class={`font-medium ${match.winner === match.player1?.id ? 'text-green-800 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
+                                  {match.player1?.name}
+                                </span>
+                                <Show when={match.winner === match.player1?.id}>
+                                  <span class="ml-auto bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded">
+                                    Winner
+                                  </span>
+                                </Show>
+                              </A>
+                            </Show>
+                            
+                            <Show when={match.player2} fallback={
+                              <div class="flex items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                <div class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center mr-3">
+                                  <span class="text-gray-500 dark:text-gray-400">?</span>
+                                </div>
+                                <span class="text-gray-500 dark:text-gray-400 italic">TBD</span>
+                              </div>
+                            }>
+                              <A 
+                                href={`/profile/${match.player2?.id}`}
+                                class={`flex items-center p-2 ${match.winner === match.player2?.id ? 'bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600'} rounded-lg`}
+                              >
+                                <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center mr-3 flex-shrink-0">
+                                  {match.player2?.name.substring(0, 1).toUpperCase()}
+                                </div>
+                                <span class={`font-medium ${match.winner === match.player2?.id ? 'text-green-800 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
+                                  {match.player2?.name}
+                                </span>
+                                <Show when={match.winner === match.player2?.id}>
+                                  <span class="ml-auto bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded">
+                                    Winner
+                                  </span>
+                                </Show>
+                              </A>
+                            </Show>
+                          </div>
+                        </div>
+                      )}
+                    </For>
+                  </div>
+                </div>
+              )}
+            </For>
+          </div>
         </div>
       </Show>
     </div>

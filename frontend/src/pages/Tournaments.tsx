@@ -1,5 +1,5 @@
 import { Component, createSignal, createResource, For, Show } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
+import { useNavigate, A } from '@solidjs/router';
 import { TournamentService, type Tournament } from '../services/api';
 
 const Tournaments: Component = () => {
@@ -133,6 +133,34 @@ const Tournaments: Component = () => {
                     <span class="ml-2 text-gray-600 dark:text-gray-400">{formatDate(tournament.startDate)}</span>
                   </div>
                 </div>
+                
+                {tournament.participants.length > 0 && (
+                  <div class="mb-4 overflow-hidden">
+                    <div class="text-sm text-gray-700 dark:text-gray-300 font-medium mb-2">
+                      Top participants:
+                    </div>
+                    <div class="flex -space-x-2 overflow-hidden">
+                      <For each={tournament.participants.slice(0, 5)}>
+                        {(participant) => (
+                          <A 
+                            href={`/profile/${participant.id}`}
+                            class="relative inline-flex rounded-full ring-2 ring-white dark:ring-gray-800 transition-transform hover:scale-110 hover:z-10"
+                            title={participant.name}
+                          >
+                            <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex-shrink-0 flex items-center justify-center text-xs font-bold">
+                              {participant.name.substring(0, 1).toUpperCase()}
+                            </div>
+                          </A>
+                        )}
+                      </For>
+                      {tournament.participants.length > 5 && (
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full ring-2 ring-white dark:ring-gray-800 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs">
+                          +{tournament.participants.length - 5}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 <div class="flex space-x-3">
                   <button
