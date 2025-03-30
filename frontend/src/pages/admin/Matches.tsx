@@ -126,12 +126,12 @@ const Matches: Component = () => {
                 <div class="p-4">
                   <div class="flex justify-between items-center mb-4">
                     <div class="flex-1 text-center">
-                      <div class="font-medium text-gray-900 dark:text-white">{match.white?.name || match.player1?.name || 'Unknown'}</div>
+                      <div class="font-medium text-gray-900 dark:text-white">{match.white?.username || match.player1?.username || 'Unknown'}</div>
                       <div class="text-sm text-gray-500 dark:text-gray-400">White</div>
                     </div>
                     <div class="mx-2 text-lg font-bold text-gray-400 dark:text-gray-500">VS</div>
                     <div class="flex-1 text-center">
-                      <div class="font-medium text-gray-900 dark:text-white">{match.black?.name || match.player2?.name || 'Unknown'}</div>
+                      <div class="font-medium text-gray-900 dark:text-white">{match.black?.username || match.player2?.username || 'Unknown'}</div>
                       <div class="text-sm text-gray-500 dark:text-gray-400">Black</div>
                     </div>
                   </div>

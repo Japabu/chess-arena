@@ -20,7 +20,7 @@ const CreateMatch: Component = () => {
     setIsLoading(true);
     
     const usersData = await UserService.getAllUsers();
-    setUsers(usersData);
+    setUsers(usersData.users);
     
     setIsLoading(false);
   };
@@ -85,7 +85,7 @@ const CreateMatch: Component = () => {
               <option value="">Select white player</option>
               <For each={users()}>
                 {(user) => (
-                  <option value={user.id}>{user.name}</option>
+                  <option value={user.id}>{user.username}</option>
                 )}
               </For>
             </select>
@@ -102,7 +102,7 @@ const CreateMatch: Component = () => {
               <option value="">Select black player</option>
               <For each={users()}>
                 {(user) => (
-                  <option value={user.id}>{user.name}</option>
+                  <option value={user.id}>{user.username}</option>
                 )}
               </For>
             </select>

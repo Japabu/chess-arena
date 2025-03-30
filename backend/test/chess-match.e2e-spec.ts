@@ -27,15 +27,7 @@ describe('Chess Match with Players (e2e)', () => {
   beforeAll(async () => {
     // Set up NestJS application with a separate test database
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRoot({
-          type: 'sqlite',
-          database: ':memory:',
-          entities: [Match, User],
-          synchronize: true,
-        }),
-        AppModule,
-      ],
+      imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

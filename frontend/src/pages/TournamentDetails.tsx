@@ -1,7 +1,7 @@
-import { Component, createSignal, createResource, Show, For, createEffect } from 'solid-js';
+import { Component, createSignal, createResource, Show, For } from 'solid-js';
 import { A, useParams } from '@solidjs/router';
 import { TournamentService } from '../services/api/TournamentService';
-import type { Tournament, User } from '../services/api/types';
+import type { User } from '../services/api/types';
 
 interface TournamentMatch {
   matchId?: number;
