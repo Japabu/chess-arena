@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { MatchEntity } from '../match/match.entity';
-import { TournamentStatus } from './tournament.model';
+import { TournamentStatus } from './tournament.service';
 @Entity()
 export class TournamentEntity {
   @PrimaryGeneratedColumn()

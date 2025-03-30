@@ -8,18 +8,55 @@ import {
   Param,
   UseGuards,
   Get,
-  UnauthorizedException,
   ParseIntPipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import {
-  GetUsersResponse,
-  LoginRequest,
-  LoginResponse,
-  RegisterUserRequest,
-  UserResponse,
-} from './user.dto';
 import { AuthGuard } from './jwt.guard';
+import { IsString, IsNotEmpty } from 'class-validator';
+import { User } from './user.service';
+
+export interface UserResponse {
+  id: number;
+  username: string;
+  createdAt: string;
+}
+
+export interface GetUsersResponse {
+  users: UserResponse[];
+}
+
+export class LoginRequest {
+  @IsString()
+  @IsNotEmpty()
+  username!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password!: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+}
+
+export class RegisterUserRequest {
+  @IsString()
+  @IsNotEmpty()
+  username!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password!: string;
+}
+
+export const userToResponse = (user: User): UserResponse => {
+  return {
+    id: user.id,
+    username: user.username,
+    createdAt: user.createdAt.toISOString(),
+  };
+};
 
 @Controller('user')
 export class UserController {
@@ -46,13 +83,9 @@ export class UserController {
   ): Promise<UserResponse> {
     const user = await this.userService.findOne(id);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new NotFoundException('User not found');
     }
-    return new UserResponse(
-      user.id,
-      user.username,
-      user.createdAt.toISOString(),
-    );
+    return userToResponse(user);
   }
 }
 
@@ -66,16 +99,9 @@ export class UserAdminController {
 
   @Get()
   async getUsers(): Promise<GetUsersResponse> {
-    return new GetUsersResponse(
-      (await this.userService.findAll()).map(
-        (user) =>
-          new UserResponse(
-            user.id,
-            user.username,
-            user.createdAt.toISOString(),
-          ),
-      ),
-    );
+    return {
+      users: (await this.userService.findAll()).map(userToResponse),
+    };
   }
 
   @Delete(':id')

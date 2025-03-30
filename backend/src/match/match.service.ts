@@ -4,9 +4,52 @@ import { Repository, UpdateResult } from 'typeorm';
 import { MatchEntity } from './match.entity';
 import { Chess } from 'chess.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Match, MatchStatus, MatchUpdateEvent } from './match.model';
-import { modelToMatch } from './match.mapper';
-import { User } from 'src/user/user.model';
+import { User } from 'src/user/user.service';
+import { Tournament } from 'src/tournament/tournament.service';
+
+export enum MatchStatus {
+  PENDING = 'pending',
+  IN_PROGRESS = 'in_progress',
+  WHITE_WON = 'white_won',
+  BLACK_WON = 'black_won',
+  DRAW = 'draw',
+  ABORTED = 'aborted',
+}
+
+export interface Match {
+  status: MatchStatus;
+  id: number;
+  white: User;
+  black: User;
+  moves: string;
+  fen: string;
+  tournament?: Tournament;
+}
+
+export interface MatchUpdateEvent {
+  matchId: number;
+  status?: MatchStatus;
+  move?: string;
+}
+
+export const entityToMatch = (match: MatchEntity): Match => {
+  return {
+    id: match.id,
+    white: {
+      id: match.white.id,
+      username: match.white.username,
+      createdAt: match.white.createdAt,
+    },
+    black: {
+      id: match.black.id,
+      username: match.black.username,
+      createdAt: match.black.createdAt,
+    },
+    moves: match.moves,
+    fen: match.fen,
+    status: match.status,
+  };
+};
 
 @Injectable()
 export class MatchService {
@@ -24,18 +67,18 @@ export class MatchService {
           createdAt: 'DESC',
         },
       })
-      .then((matches) => matches.map(modelToMatch));
+      .then((matches) => matches.map(entityToMatch));
   }
   async findOne(id: number): Promise<Match | null> {
     const match = await this.matchRepository.findOne({
       where: { id },
       relations: ['white', 'black', 'tournament'],
     });
-    return match ? modelToMatch(match) : null;
+    return match ? entityToMatch(match) : null;
   }
 
-  async create(match: Partial<MatchEntity>): Promise<Match> {
-    return modelToMatch(
+  async create(match: {}): Promise<Match> {
+    return entityToMatch(
       await this.matchRepository.save(this.matchRepository.create(match)),
     );
   }

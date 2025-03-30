@@ -6,8 +6,7 @@ import { MatchEntity } from '../match/match.entity';
 import { UserEntity } from '../user/user.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnEvent } from '@nestjs/event-emitter';
-import { TournamentStatus } from './tournament.model';
-import { MatchStatus } from '../match/match.model';
+import { MatchStatus } from 'src/match/match.service';
 
 export interface TournamentBracket {
   rounds: {
@@ -21,6 +20,20 @@ export interface TournamentBracket {
       status?: string;
     }[];
   }[];
+}
+
+export enum TournamentStatus {
+  REGISTRATION = 'registration',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+}
+
+export interface Tournament {
+  id: number;
+  name: string;
+  description: string;
+  status: TournamentStatus;
 }
 
 @Injectable()

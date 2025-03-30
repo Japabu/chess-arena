@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { TournamentEntity } from '../tournament/tournament.entity';
-import { MatchStatus } from './match.model';
+import { MatchStatus } from './match.service';
 
 const INITIAL_FEN_POSITION =
   'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

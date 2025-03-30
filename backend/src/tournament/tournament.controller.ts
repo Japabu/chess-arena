@@ -11,11 +11,22 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { TournamentService, TournamentBracket } from './tournament.service';
+import {
+  TournamentService,
+  TournamentBracket,
+  TournamentStatus,
+} from './tournament.service';
 import { TournamentEntity } from './tournament.entity';
 import { UserEntity } from '../user/user.entity';
 import { AuthGuard } from '../user/jwt.guard';
 import { User as CurrentUser } from '../user/user.decorator';
+
+export interface TournamentResponse {
+  id: number;
+  name: string;
+  description: string;
+  status: TournamentStatus;
+}
 
 @Controller('tournaments')
 export class TournamentController {
