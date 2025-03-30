@@ -55,6 +55,21 @@ export class TournamentService {
   }
 
   /**
+   * Bulk delete multiple tournaments (admin only)
+   */
+  static async bulkDeleteTournaments(tournamentIds: number[]): Promise<void> {
+    const token = localStorage.getItem("token");
+    await fetch(`${this.baseUrl}/tournaments/bulk-delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ tournamentIds }),
+    });
+  }
+
+  /**
    * Register a participant for a tournament (admin only)
    */
   static async registerForTournament(tournamentId: number): Promise<any> {

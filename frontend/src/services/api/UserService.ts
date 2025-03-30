@@ -77,6 +77,21 @@ export class UserService {
   }
 
   /**
+   * Bulk delete multiple users (admin only)
+   */
+  static async bulkDeleteUsers(userIds: number[]): Promise<void> {
+    const token = localStorage.getItem("token");
+    await fetch(`${this.baseUrl}/admin/users/bulk-delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ userIds }),
+    });
+  }
+
+  /**
    * Login a user
    */
   static async login(

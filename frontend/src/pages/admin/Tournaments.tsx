@@ -21,10 +21,12 @@ interface Tournament {
 
 const Tournaments: Component = () => {
   const [tournaments, setTournaments] = createSignal<Tournament[]>([]);
+  const [selectedTournaments, setSelectedTournaments] = createSignal<number[]>([]);
   const [isLoading, setIsLoading] = createSignal(true);
   const [error, setError] = createSignal('');
   const [deleteSuccess, setDeleteSuccess] = createSignal('');
   const [actionSuccess, setActionSuccess] = createSignal('');
+  const [selectAll, setSelectAll] = createSignal(false);
   const navigate = useNavigate();
   
   // Check for authentication and fetch tournaments
@@ -59,6 +61,9 @@ const Tournaments: Component = () => {
       }));
       
       setTournaments(mappedTournaments);
+      // Reset selections when fetching new data
+      setSelectedTournaments([]);
+      setSelectAll(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       if (err instanceof Error && err.message.includes('Unauthorized')) {
@@ -94,6 +99,62 @@ const Tournaments: Component = () => {
       if (err instanceof Error && err.message.includes('Unauthorized')) {
         navigate('/admin/login');
       }
+    }
+  };
+  
+  const handleSelectTournament = (tournamentId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedTournaments(prev => [...prev, tournamentId]);
+    } else {
+      setSelectedTournaments(prev => prev.filter(id => id !== tournamentId));
+      setSelectAll(false);
+    }
+  };
+  
+  const handleSelectAll = (checked: boolean) => {
+    setSelectAll(checked);
+    if (checked) {
+      setSelectedTournaments(tournaments().map(tournament => tournament.id));
+    } else {
+      setSelectedTournaments([]);
+    }
+  };
+  
+  const handleBulkDelete = async () => {
+    const selectedIds = selectedTournaments();
+    if (selectedIds.length === 0) return;
+    
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} tournaments?`)) {
+      return;
+    }
+    
+    setError('');
+    setDeleteSuccess('');
+    setIsLoading(true);
+    
+    try {
+      await TournamentService.bulkDeleteTournaments(selectedIds);
+      
+      // Remove the tournaments from the list
+      setTournaments(prev => prev.filter(t => !selectedIds.includes(t.id)));
+      
+      // Reset selections
+      setSelectedTournaments([]);
+      setSelectAll(false);
+      
+      setDeleteSuccess(`${selectedIds.length} tournaments deleted successfully!`);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setDeleteSuccess('');
+      }, 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      if (err instanceof Error && err.message.includes('Unauthorized')) {
+        navigate('/admin/login');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -169,6 +230,15 @@ const Tournaments: Component = () => {
           >
             Refresh
           </button>
+          <Show when={selectedTournaments().length > 0}>
+            <button 
+              class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors" 
+              onClick={handleBulkDelete}
+              disabled={isLoading()}
+            >
+              Delete Selected ({selectedTournaments().length})
+            </button>
+          </Show>
         </div>
       </div>
       
@@ -203,6 +273,14 @@ const Tournaments: Component = () => {
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <input 
+                      type="checkbox" 
+                      checked={selectAll()}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Format</th>
@@ -216,6 +294,14 @@ const Tournaments: Component = () => {
                 <For each={tournaments()}>
                   {(tournament) => (
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-750">
+                      <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedTournaments().includes(tournament.id)}
+                          onChange={(e) => handleSelectTournament(tournament.id, e.target.checked)}
+                          class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
+                        />
+                      </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">{tournament.id}</td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">{tournament.name}</td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">{formatTournamentFormat(tournament.format)}</td>
