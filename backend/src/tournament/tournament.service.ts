@@ -2,11 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TournamentEntity } from './tournament.entity';
-import { MatchEntity } from '../match/match.entity';
 import { UserEntity } from '../user/user.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnEvent } from '@nestjs/event-emitter';
-import { MatchStatus } from 'src/match/match.service';
+import { MatchService, MatchStatus } from '../match/match.service';
 
 export interface TournamentBracket {
   rounds: {
@@ -41,9 +40,8 @@ export class TournamentService {
   constructor(
     @InjectRepository(TournamentEntity)
     private tournamentRepository: Repository<TournamentEntity>,
-    @InjectRepository(MatchEntity)
-    private matchRepository: Repository<MatchEntity>,
     private eventEmitter: EventEmitter2,
+    private matchService: MatchService,
   ) {}
 
   findAll(): Promise<TournamentEntity[]> {
@@ -220,7 +218,7 @@ export class TournamentService {
     for (const match of firstRound.matches) {
       // Only create matches with both players assigned
       if (match.player1 && match.player2) {
-        const createdMatch = await this.matchRepository.save({
+        const createdMatch = await this.matchService.create({
           white: match.player1,
           black: match.player2,
           tournament: tournament,

@@ -17,9 +17,7 @@ import {
   TournamentStatus,
 } from './tournament.service';
 import { TournamentEntity } from './tournament.entity';
-import { UserEntity } from '../user/user.entity';
 import { AuthGuard } from '../user/jwt.guard';
-import { User as CurrentUser } from '../user/user.decorator';
 
 export interface TournamentResponse {
   id: number;
@@ -48,6 +46,11 @@ export class TournamentController {
   ): Promise<TournamentBracket | null> {
     return this.tournamentService.getTournamentBracket(id);
   }
+}
+
+@Controller('admin/tournaments')
+export class TournamentAdminController {
+  constructor(private readonly tournamentService: TournamentService) {}
 
   @Post()
   @UseGuards(AuthGuard(['admin']))
@@ -68,24 +71,6 @@ export class TournamentController {
   @UseGuards(AuthGuard(['admin']))
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.tournamentService.delete(id);
-  }
-
-  @Post(':id/register')
-  @UseGuards(AuthGuard())
-  async register(
-    @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: UserEntity,
-  ) {
-    try {
-      return await this.tournamentService.registerParticipant(id, user.id);
-    } catch (error: any) {
-      throw new HttpException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to register for tournament',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
   }
 
   @Post(':id/start')

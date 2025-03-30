@@ -4,8 +4,8 @@ import { Repository, UpdateResult } from 'typeorm';
 import { MatchEntity } from './match.entity';
 import { Chess } from 'chess.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { User } from 'src/user/user.service';
-import { Tournament } from 'src/tournament/tournament.service';
+import { User } from '../user/user.service';
+import { Tournament } from '../tournament/tournament.service';
 
 export enum MatchStatus {
   PENDING = 'pending',
@@ -77,18 +77,32 @@ export class MatchService {
     return match ? entityToMatch(match) : null;
   }
 
-  async create(match: {}): Promise<Match> {
+  async create(match: {
+    white: User;
+    black: User;
+    tournament?: Tournament;
+    tournamentRound?: number;
+    tournamentMatchNumber?: number;
+  }): Promise<Match> {
     return entityToMatch(
-      await this.matchRepository.save(this.matchRepository.create(match)),
+      await this.matchRepository.save(
+        this.matchRepository.create({
+          white: match.white,
+          black: match.black,
+          tournament: match.tournament,
+          tournamentRound: match.tournamentRound,
+          tournamentMatchNumber: match.tournamentMatchNumber,
+        }),
+      ),
     );
   }
 
-  async delete(id: number): Promise<void> {
-    await this.matchRepository.delete(id);
+  async delete(match: Match): Promise<void> {
+    await this.matchRepository.delete(match);
   }
 
-  update(id: number, match: Partial<MatchEntity>): Promise<UpdateResult> {
-    return this.matchRepository.update(id, match);
+  update(match: Match): Promise<UpdateResult> {
+    return this.matchRepository.update(match, match);
   }
 
   async makeMove(

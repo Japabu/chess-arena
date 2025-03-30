@@ -4,17 +4,16 @@ import {
   Post,
   Body,
   Param,
-  Delete,
   UseGuards,
-  Put,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
 import { Match, MatchService, MatchStatus } from './match.service';
 import { AuthGuard } from '../user/jwt.guard';
-import { UpdateResult } from 'typeorm';
-import { UserResponse, userToResponse } from 'src/user/user.controller';
-import { TournamentResponse } from 'src/tournament/tournament.controller';
+import { UserResponse, userToResponse } from '../user/user.controller';
+import { TournamentResponse } from '../tournament/tournament.controller';
+import { UserService } from '../user/user.service';
+
 interface MatchResponse {
   status: MatchStatus;
   id: number;
@@ -26,13 +25,8 @@ interface MatchResponse {
 }
 
 interface MatchRequest {
-  white: UserResponse;
-  black: UserResponse;
-}
-
-interface UpdateMatchRequest {
-  white: UserResponse;
-  black: UserResponse;
+  white: { id: number };
+  black: { id: number };
 }
 
 const matchToResponse = (match: Match): MatchResponse => {
@@ -47,7 +41,7 @@ const matchToResponse = (match: Match): MatchResponse => {
   };
 };
 
-@Controller('match')
+@Controller('matches')
 export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
@@ -68,30 +62,23 @@ export class MatchController {
     }
     return matchToResponse(match);
   }
+}
+
+@UseGuards(AuthGuard(['admin']))
+@Controller('admin/matches')
+export class MatchAdminController {
+  constructor(
+    private readonly matchService: MatchService,
+    private readonly userService: UserService,
+  ) {}
 
   @Post()
-  @UseGuards(AuthGuard(['admin']))
   async create(@Body() match: MatchRequest): Promise<MatchResponse> {
-    return matchToResponse(
-      await this.matchService.create({
-        white: match.white,
-        black: match.black,
-      }),
-    );
-  }
-
-  @Delete(':id')
-  @UseGuards(AuthGuard(['admin']))
-  delete(@Param('id') id: string): Promise<void> {
-    return this.matchService.delete(+id);
-  }
-
-  @Put(':id')
-  @UseGuards(AuthGuard(['admin']))
-  update(
-    @Param('id') id: string,
-    @Body() match: Partial<MatchRequest>,
-  ): Promise<UpdateResult> {
-    return this.matchService.update(+id, match);
+    const white = await this.userService.findOne(match.white.id);
+    const black = await this.userService.findOne(match.black.id);
+    if (!white || !black) {
+      throw new NotFoundException('User not found');
+    }
+    return matchToResponse(await this.matchService.create(white, black));
   }
 }

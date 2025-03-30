@@ -58,7 +58,7 @@ export const userToResponse = (user: User): UserResponse => {
   };
 };
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
@@ -88,10 +88,6 @@ export class UserController {
     return userToResponse(user);
   }
 }
-
-// ==========================================
-// Admin Endpoints
-// ==========================================
 @UseGuards(AuthGuard(['admin']))
 @Controller('admin/users')
 export class UserAdminController {

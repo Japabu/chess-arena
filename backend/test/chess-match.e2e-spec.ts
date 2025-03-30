@@ -2,8 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
-import { io, Manager, ManagerOptions } from 'socket.io-client';
-import { ConfigService } from '@nestjs/config';
+import { io } from 'socket.io-client';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { MatchEntity } from '../src/match/match.entity';
 import { Repository } from 'typeorm';
@@ -13,8 +12,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 describe('Chess Match with Players (e2e)', () => {
   let app: INestApplication;
   let matchesRepository: Repository<MatchEntity>;
-  let usersRepository: Repository<UserEntity>;
-  let configService: ConfigService;
   let user1Id: number;
   let user2Id: number;
   let user1Password: string;
@@ -25,7 +22,6 @@ describe('Chess Match with Players (e2e)', () => {
   let matchId: number;
   let user1Socket: any;
   let user2Socket: any;
-  let serverBaseUrl: string;
   let wsBaseUrl: string;
 
   beforeAll(async () => {
@@ -50,10 +46,6 @@ describe('Chess Match with Players (e2e)', () => {
     matchesRepository = moduleFixture.get<Repository<MatchEntity>>(
       getRepositoryToken(MatchEntity),
     );
-    usersRepository = moduleFixture.get<Repository<UserEntity>>(
-      getRepositoryToken(UserEntity),
-    );
-    configService = moduleFixture.get<ConfigService>(ConfigService);
 
     // Start listening on a dynamic port
     await app.listen(0);
@@ -61,8 +53,6 @@ describe('Chess Match with Players (e2e)', () => {
     const serverAddress = httpServer.address();
     const port = serverAddress.port;
 
-    // Set the base URLs
-    serverBaseUrl = `http://localhost:${port}`;
     wsBaseUrl = `ws://localhost:${port}`;
   });
 
@@ -204,7 +194,7 @@ describe('Chess Match with Players (e2e)', () => {
         ) => {
           return new Promise<void>((resolveJoin, rejectJoin) => {
             console.log(`${socketName} attempting to join match ${matchId}`);
-            socket.emit('join', matchId, (data) => {
+            socket.emit('join', matchId, (data: any) => {
               console.log(`${socketName} join response:`, data);
               if (data && data.success) {
                 resolveJoin();
@@ -229,7 +219,7 @@ describe('Chess Match with Players (e2e)', () => {
             console.log(
               `${socketName} attempting move ${move} in match ${matchId}`,
             );
-            socket.emit('move', { matchId, move }, (moveResult) => {
+            socket.emit('move', { matchId, move }, (moveResult: any) => {
               console.log(`${socketName} move response:`, moveResult);
               if (moveResult && moveResult.success) {
                 resolveMove();

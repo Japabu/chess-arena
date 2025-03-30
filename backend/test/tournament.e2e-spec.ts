@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { TournamentStatus } from '../src/tournament/tournament.model';
-import { MatchStatus } from '../src/match/match.model';
+import { TournamentStatus } from '../src/tournament/tournament.service';
 import { io, Socket } from 'socket.io-client';
+import { MatchStatus } from '../src/match/match.service';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { TestingModule, Test } from '@nestjs/testing';
 
 // Define interfaces for tournament bracket data structure
 interface TournamentPlayer {
