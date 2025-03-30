@@ -20,7 +20,6 @@ import {
   UserResponse,
 } from './user.dto';
 import { AuthGuard } from './jwt.guard';
-import { User } from './user.model';
 
 @Controller('user')
 export class UserController {

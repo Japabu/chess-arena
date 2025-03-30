@@ -53,7 +53,7 @@ const Tournaments: Component = () => {
         maxParticipants: apiTournament.maxParticipants,
         participants: apiTournament.participants.map((participant: ApiUser) => ({
           id: participant.id,
-          username: participant.name
+          username: participant.username || 'Unknown'
         })),
         createdAt: apiTournament.createdAt
       }));
@@ -132,6 +132,7 @@ const Tournaments: Component = () => {
   };
   
   const formatTournamentFormat = (format: string) => {
+    if (!format) return 'Double Elimination'; // Default to Double Elimination if format is undefined or null
     return format.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
   

@@ -1,5 +1,5 @@
-import { Component, createSignal, createEffect, Show } from 'solid-js';
-import { A, useNavigate, useLocation } from '@solidjs/router';
+import { Component, Show } from 'solid-js';
+import { A, useNavigate } from '@solidjs/router';
 import { AuthStore } from '../services/auth.store';
 import ContextMenu from './ContextMenu';
 
@@ -21,7 +21,6 @@ const Navbar: Component = () => {
             </A>
           </div>
           
-          {/* Desktop menu */}
           <div class="flex items-center space-x-4">
             <A href="/matches" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 transition-colors duration-200">
               Matches

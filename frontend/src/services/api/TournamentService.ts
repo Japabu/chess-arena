@@ -55,7 +55,7 @@ export class TournamentService {
   }
 
   /**
-   * Register for a tournament
+   * Register a participant for a tournament (admin only)
    */
   static async registerForTournament(tournamentId: number): Promise<any> {
     const token = localStorage.getItem("token");

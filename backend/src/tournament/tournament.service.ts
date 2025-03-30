@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { TournamentEntity } from './tournament.entity';
 import { MatchEntity } from '../match/match.entity';
 import { UserEntity } from '../user/user.entity';
-import { MatchService } from '../match/match.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnEvent } from '@nestjs/event-emitter';
 import { TournamentStatus } from './tournament.model';
@@ -141,10 +140,14 @@ export class TournamentService {
   ): TournamentBracket {
     const participants = [...tournament.participants];
 
-    // Shuffle participants
+    // Shuffle participants using type-safe approach
     for (let i = participants.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [participants[i], participants[j]] = [participants[j], participants[i]];
+      // Using non-null assertion since we know these indices exist
+      [participants[i]!, participants[j]!] = [
+        participants[j]!,
+        participants[i]!,
+      ];
     }
 
     // Calculate number of rounds needed
@@ -177,14 +180,14 @@ export class TournamentService {
             : undefined,
       };
 
-      bracket.rounds[0].matches.push(match);
+      bracket.rounds[0]?.matches.push(match);
     }
 
     // Create subsequent rounds with empty matches
     for (let round = 1; round < rounds; round++) {
       const matchesInRound = Math.pow(2, rounds - round - 1);
       for (let match = 0; match < matchesInRound; match++) {
-        bracket.rounds[round].matches.push({
+        bracket.rounds[round]?.matches.push({
           matchNumber: match + 1,
         });
       }
@@ -199,6 +202,7 @@ export class TournamentService {
   ): Promise<void> {
     // Only create matches for first round
     const firstRound = bracket.rounds[0];
+    if (!firstRound) return;
 
     for (const match of firstRound.matches) {
       // Only create matches with both players assigned
@@ -228,15 +232,14 @@ export class TournamentService {
     });
 
     if (
-      !match ||
-      !match.tournament ||
+      !match?.tournament ||
       match.tournamentRound === undefined ||
       match.tournamentMatchNumber === undefined
     )
       return;
 
     const tournament = await this.findOne(match.tournament.id);
-    if (!tournament || !tournament.bracketData) return;
+    if (!tournament?.bracketData) return;
 
     const bracket: TournamentBracket = JSON.parse(tournament.bracketData);
 
@@ -257,13 +260,9 @@ export class TournamentService {
       match.status === MatchStatus.WHITE_WON ||
       match.status === MatchStatus.BLACK_WON
     ) {
-      const winnerId =
-        match.status === MatchStatus.WHITE_WON
-          ? match.white.id
-          : match.black.id;
       const winner =
         match.status === MatchStatus.WHITE_WON ? match.white : match.black;
-      bracketMatch.winner = winnerId;
+      bracketMatch.winner = winner.id;
 
       // If not the final round, create or update next match
       if (match.tournamentRound < bracket.rounds.length) {

@@ -56,7 +56,7 @@ export class GameWebSocketGateway implements OnGatewayConnection {
   }
 
   private getClientData(client: Socket): ClientData {
-    return (client.data || {}) as ClientData;
+    return (client.data ?? {}) as ClientData;
   }
 
   private setClientData(client: Socket, data: ClientData) {
@@ -76,7 +76,7 @@ export class GameWebSocketGateway implements OnGatewayConnection {
 
   async handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
-    const token = client.handshake.auth?.token;
+    const token = client.handshake.auth?.['token'];
     if (token) {
       this.setClientData(client, {
         jwtPayload: await this.userService.verifyToken(token),
@@ -123,7 +123,7 @@ export class GameWebSocketGateway implements OnGatewayConnection {
       );
       return {
         success: false,
-        message: `Error joining match: ${error.message || 'Unknown error'}`,
+        message: `Error joining match: ${error.message ?? 'Unknown error'}`,
       };
     }
   }
@@ -159,7 +159,7 @@ export class GameWebSocketGateway implements OnGatewayConnection {
 
     return {
       success: makeMoveResult.success,
-      message: makeMoveResult.message,
+      message: makeMoveResult.message ?? 'Unknown error',
     };
   }
 

@@ -30,13 +30,6 @@ interface Match {
   createdAt: string;
 }
 
-// Response from the join match request
-interface JoinResponse {
-  status: string;
-  fen: string;
-  message?: string;
-}
-
 // Game state update from WebSocket
 interface GameStateUpdate {
   matchId: number;

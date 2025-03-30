@@ -5,7 +5,7 @@ import { UserService, TournamentService } from '../../services/api';
 const CreateTournament: Component = () => {
   const [tournamentName, setTournamentName] = createSignal('');
   const [tournamentDescription, setTournamentDescription] = createSignal('');
-  const [tournamentFormat, setTournamentFormat] = createSignal('single_elimination');
+  const [tournamentFormat, setTournamentFormat] = createSignal('double_elimination');
   const [maxParticipants, setMaxParticipants] = createSignal(0);
   const [isCreating, setIsCreating] = createSignal(false);
   const [error, setError] = createSignal('');
@@ -112,13 +112,10 @@ const CreateTournament: Component = () => {
               disabled={isCreating()}
               class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
             >
-              <option value="single_elimination">Single Elimination</option>
               <option value="double_elimination">Double Elimination</option>
-              <option value="round_robin">Round Robin</option>
-              <option value="swiss">Swiss</option>
             </select>
             <div class="text-sm text-gray-500 dark:text-gray-400">
-              How the tournament matchups will be organized
+              Tournament is organized as a double elimination bracket with winners and losers brackets
             </div>
           </div>
           
