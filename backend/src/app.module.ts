@@ -7,8 +7,8 @@ import { WebSocketModule } from './websocket/websocket.module';
 import { MatchModule } from './match/match.module';
 import { UserModule } from './user/user.module';
 import { TournamentModule } from './tournament/tournament.module';
-import { MatchEntity as MatchEntity } from './match/match.entity';
-import { UserEntity } from './user/user.entity';
+import { Match as Match } from './match/match.entity';
+import { User } from './user/user.entity';
 import { TournamentEntity as TournamentEntity } from './tournament/tournament.entity';
 
 @Module({
@@ -28,7 +28,7 @@ import { TournamentEntity as TournamentEntity } from './tournament/tournament.en
         username: configService.getOrThrow<string>('DB_USERNAME'),
         password: configService.getOrThrow<string>('DB_PASSWORD'),
         database: configService.getOrThrow<string>('DB_NAME'),
-        entities: [MatchEntity, UserEntity, TournamentEntity],
+        entities: [Match, User, TournamentEntity],
         synchronize: configService.getOrThrow('NODE_ENV') !== 'production',
       }),
     }),

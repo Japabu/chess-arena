@@ -4,14 +4,14 @@ import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { io } from 'socket.io-client';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { MatchEntity } from '../src/match/match.entity';
+import { Match } from '../src/match/match.entity';
 import { Repository } from 'typeorm';
-import { UserEntity } from '../src/user/user.entity';
+import { User } from '../src/user/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 describe('Chess Match with Players (e2e)', () => {
   let app: INestApplication;
-  let matchesRepository: Repository<MatchEntity>;
+  let matchesRepository: Repository<Match>;
   let user1Id: number;
   let user2Id: number;
   let user1Password: string;
@@ -31,7 +31,7 @@ describe('Chess Match with Players (e2e)', () => {
         TypeOrmModule.forRoot({
           type: 'sqlite',
           database: ':memory:',
-          entities: [MatchEntity, UserEntity],
+          entities: [Match, User],
           synchronize: true,
         }),
         AppModule,
@@ -43,8 +43,8 @@ describe('Chess Match with Players (e2e)', () => {
     await app.init();
 
     // Get repositories and config service
-    matchesRepository = moduleFixture.get<Repository<MatchEntity>>(
-      getRepositoryToken(MatchEntity),
+    matchesRepository = moduleFixture.get<Repository<Match>>(
+      getRepositoryToken(Match),
     );
 
     // Start listening on a dynamic port

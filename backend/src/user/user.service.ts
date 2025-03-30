@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
-import { UserEntity } from './user.entity';
+import { User } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 
@@ -23,7 +23,7 @@ export interface User {
   createdAt: Date;
 }
 
-const entityToModel = (entity: UserEntity): User => {
+const entityToModel = (entity: User): User => {
   return {
     id: entity.id,
     username: entity.username,
@@ -37,8 +37,8 @@ export class UserService implements OnModuleInit {
 
   constructor(
     private jwtService: JwtService,
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private configService: ConfigService,
   ) {}
 
@@ -63,7 +63,7 @@ export class UserService implements OnModuleInit {
     await this.userRepository.save(
       this.userRepository.create({
         username: adminUsername,
-        password: await bcrypt.hash(adminPassword, this.saltRounds),
+        passwordHash: await bcrypt.hash(adminPassword, this.saltRounds),
         roles: ['admin'],
       }),
     );
@@ -81,7 +81,7 @@ export class UserService implements OnModuleInit {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -109,7 +109,7 @@ export class UserService implements OnModuleInit {
 
     const newUser = this.userRepository.create({
       username,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
     });
 
     await this.userRepository.save(newUser);

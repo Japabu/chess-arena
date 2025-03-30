@@ -8,11 +8,11 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { Match, MatchService, MatchStatus } from './match.service';
-import { AuthGuard } from '../user/jwt.guard';
 import { UserResponse, userToResponse } from '../user/user.controller';
-import { TournamentResponse } from '../tournament/tournament.controller';
 import { UserService } from '../user/user.service';
+import { AuthGuard } from '../user/jwt';
+import { MatchStatus, Match } from './match.entity';
+import { MatchService } from './match.service';
 
 interface MatchResponse {
   status: MatchStatus;
@@ -21,7 +21,6 @@ interface MatchResponse {
   black: UserResponse;
   moves: string;
   fen: string;
-  tournament?: TournamentResponse;
 }
 
 interface MatchRequest {
@@ -37,7 +36,6 @@ const matchToResponse = (match: Match): MatchResponse => {
     black: userToResponse(match.black),
     moves: match.moves,
     fen: match.fen,
-    tournament: match.tournament,
   };
 };
 
@@ -79,6 +77,11 @@ export class MatchAdminController {
     if (!white || !black) {
       throw new NotFoundException('User not found');
     }
-    return matchToResponse(await this.matchService.create(white, black));
+    return matchToResponse(
+      await this.matchService.create({
+        white,
+        black,
+      }),
+    );
   }
 }

@@ -12,7 +12,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { AuthGuard } from './jwt.guard';
+import { AuthGuard } from './jwt';
 import { IsString, IsNotEmpty } from 'class-validator';
 import { User } from './user.service';
 

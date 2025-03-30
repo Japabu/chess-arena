@@ -6,23 +6,31 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
-import { UserEntity } from '../user/user.entity';
 import { TournamentEntity } from '../tournament/tournament.entity';
-import { MatchStatus } from './match.service';
+import { User } from 'src/user/user.entity';
+
+export enum MatchStatus {
+  PENDING = 'pending',
+  IN_PROGRESS = 'in_progress',
+  WHITE_WON = 'white_won',
+  BLACK_WON = 'black_won',
+  DRAW = 'draw',
+  ABORTED = 'aborted',
+}
 
 const INITIAL_FEN_POSITION =
   'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 @Entity()
-export class MatchEntity {
+export class Match {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => UserEntity)
-  white!: UserEntity;
+  @ManyToOne(() => User)
+  white!: User;
 
-  @ManyToOne(() => UserEntity)
-  black!: UserEntity;
+  @ManyToOne(() => User)
+  black!: User;
 
   @Column('text', { default: '' })
   moves: string = '';
@@ -38,17 +46,6 @@ export class MatchEntity {
     default: MatchStatus.PENDING,
   })
   status: MatchStatus = MatchStatus.PENDING;
-
-  @ManyToOne(() => TournamentEntity, (tournament) => tournament.matches, {
-    nullable: true,
-  })
-  tournament?: TournamentEntity;
-
-  @Column('integer', { nullable: true })
-  tournamentRound?: number;
-
-  @Column('integer', { nullable: true })
-  tournamentMatchNumber?: number;
 
   @CreateDateColumn()
   createdAt!: Date;

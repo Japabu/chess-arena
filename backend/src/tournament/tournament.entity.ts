@@ -7,36 +7,32 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  ManyToOne,
+  OneToOne,
 } from 'typeorm';
-import { UserEntity } from '../user/user.entity';
-import { MatchEntity } from '../match/match.entity';
-import { TournamentStatus } from './tournament.service';
+import { User } from '../user/user.entity';
+import { Match } from '../match/match.entity';
+
+export enum TournamentStatus {
+  OPEN = 'open',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+}
+
 @Entity()
 export class TournamentEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column('varchar', { length: 100 })
+  @Column('text')
   name!: string;
-
-  @Column('text', { nullable: true })
-  description?: string;
 
   @Column({
     type: 'varchar',
     enum: TournamentStatus,
-    default: TournamentStatus.REGISTRATION,
+    default: TournamentStatus.OPEN,
   })
-  status: TournamentStatus = TournamentStatus.REGISTRATION;
-
-  @Column('integer', { default: 0 })
-  maxParticipants: number = 0;
-
-  @Column('boolean', { default: false })
-  isPublic: boolean = false;
-
-  @Column('timestamp', { nullable: true })
-  registrationDeadline?: Date;
+  status: TournamentStatus = TournamentStatus.OPEN;
 
   @Column('timestamp', { nullable: true })
   startDate?: Date;
@@ -44,19 +40,27 @@ export class TournamentEntity {
   @Column('timestamp', { nullable: true })
   endDate?: Date;
 
-  @ManyToMany(() => UserEntity)
-  @JoinTable()
-  participants!: UserEntity[];
-
-  @OneToMany(() => MatchEntity, (match) => match.tournament)
-  matches!: MatchEntity[];
-
-  @Column('text', { nullable: true })
-  bracketData?: string;
+  @Column('integer', { array: true })
+  userIds!: number[];
 
   @CreateDateColumn()
   createdAt!: Date;
 
   @UpdateDateColumn()
   updatedAt!: Date;
+}
+
+@Entity()
+export class TournamentMatch {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @OneToOne(() => TournamentEntity)
+  tournament!: TournamentEntity;
+
+  @OneToOne(() => Match)
+  match!: Match;
+
+  @Column('integer')
+  round!: number;
 }

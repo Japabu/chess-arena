@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class UserEntity {
+export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -15,10 +15,10 @@ export class UserEntity {
   username!: string;
 
   @Column()
-  password!: string;
+  passwordHash!: string;
 
-  @Column('simple-json', { default: '["user"]' })
-  roles!: string[];
+  @Column('text', { array: true, default: ['user'] })
+  roles: string[] = ['user'];
 
   @CreateDateColumn()
   createdAt!: Date;

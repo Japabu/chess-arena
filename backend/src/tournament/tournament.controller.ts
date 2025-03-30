@@ -17,7 +17,7 @@ import {
   TournamentStatus,
 } from './tournament.service';
 import { TournamentEntity } from './tournament.entity';
-import { AuthGuard } from '../user/jwt.guard';
+import { AuthGuard } from '../user/jwt';
 
 export interface TournamentResponse {
   id: number;
