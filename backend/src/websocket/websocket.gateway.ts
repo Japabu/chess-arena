@@ -10,8 +10,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { UserService } from '../user/user.service';
 import { MatchService, MatchUpdateEvent } from '../match/match.service';
-import { JwtPayload, UserService } from '../user/user.service';
+import { JwtPayload } from '../user/jwt';
 
 interface MoveRequest {
   matchId: number;
@@ -19,8 +20,7 @@ interface MoveRequest {
 }
 
 interface MoveResponse {
-  success: boolean;
-  message: string;
+  error?: string;
 }
 
 interface JoinMatchResponse {
@@ -142,13 +142,13 @@ export class GameWebSocketGateway implements OnGatewayConnection {
     @MessageBody() data: MoveRequest,
   ): Promise<MoveResponse> {
     const { jwtPayload } = this.getClientData(client);
-    if (!jwtPayload) return { success: false, message: 'Unauthorized' };
+    if (!jwtPayload) return { error: 'Unauthorized' };
 
     const user = await this.userService.findOne(jwtPayload.id);
     if (!user) throw new Error('User not found');
 
     const match = await this.matchService.findOne(data.matchId);
-    if (!match) return { success: false, message: 'Match not found' };
+    if (!match) return { error: 'Match not found' };
 
     const makeMoveResult = await this.matchService.makeMove(
       match,
@@ -157,8 +157,7 @@ export class GameWebSocketGateway implements OnGatewayConnection {
     );
 
     return {
-      success: makeMoveResult.success,
-      message: makeMoveResult.message ?? 'Unknown error',
+      error: makeMoveResult.error,
     };
   }
 
@@ -169,19 +168,5 @@ export class GameWebSocketGateway implements OnGatewayConnection {
       status: event.status,
       move: event.move,
     });
-  }
-
-  @OnEvent('tournament.update')
-  handleTournamentUpdate(event: { tournamentId: number; matchId: number }) {
-    this.server
-      .to(this.getTournamentRoomName(event.tournamentId))
-      .emit('tournament.update', {
-        tournamentId: event.tournamentId,
-        matchId: event.matchId,
-      });
-  }
-
-  private getTournamentRoomName(tournamentId: number): string {
-    return `tournament:${tournamentId}`;
   }
 }

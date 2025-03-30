@@ -2,17 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TournamentEntity } from './tournament.entity';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { OnEvent } from '@nestjs/event-emitter';
-import { MatchService } from 'src/match/match.service';
 
 @Injectable()
 export class TournamentService {
   constructor(
     @InjectRepository(TournamentEntity)
     private tournamentRepository: Repository<TournamentEntity>,
-    private eventEmitter: EventEmitter2,
-    private matchService: MatchService,
   ) {}
 
   findAll(): Promise<TournamentEntity[]> {

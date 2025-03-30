@@ -8,15 +8,9 @@ import {
   Put,
   ParseIntPipe,
   UseGuards,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
-import {
-  TournamentService,
-  TournamentBracket,
-  TournamentStatus,
-} from './tournament.service';
-import { TournamentEntity } from './tournament.entity';
+import { TournamentService } from './tournament.service';
+import { TournamentEntity, TournamentStatus } from './tournament.entity';
 import { AuthGuard } from '../user/jwt';
 
 export interface TournamentResponse {
@@ -38,13 +32,6 @@ export class TournamentController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.tournamentService.findOne(id);
-  }
-
-  @Get(':id/bracket')
-  getBracket(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<TournamentBracket | null> {
-    return this.tournamentService.getTournamentBracket(id);
   }
 }
 
@@ -71,18 +58,5 @@ export class TournamentAdminController {
   @UseGuards(AuthGuard(['admin']))
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.tournamentService.delete(id);
-  }
-
-  @Post(':id/start')
-  @UseGuards(AuthGuard(['admin']))
-  async startTournament(@Param('id', ParseIntPipe) id: number) {
-    try {
-      return await this.tournamentService.startTournament(id);
-    } catch (error: any) {
-      throw new HttpException(
-        error instanceof Error ? error.message : 'Failed to start tournament',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
   }
 }

@@ -7,29 +7,10 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-
-export interface JwtPayload {
-  id: number;
-  username: string;
-  roles: string[];
-}
-
-export interface User {
-  id: number;
-  username: string;
-  createdAt: Date;
-}
-
-const entityToModel = (entity: User): User => {
-  return {
-    id: entity.id,
-    username: entity.username,
-    createdAt: entity.createdAt,
-  };
-};
+import { User } from './user.entity';
+import { JwtPayload } from './jwt';
 
 @Injectable()
 export class UserService implements OnModuleInit {
@@ -116,7 +97,7 @@ export class UserService implements OnModuleInit {
   }
 
   async findAll(): Promise<User[]> {
-    return (await this.userRepository.find()).map(entityToModel);
+    return await this.userRepository.find();
   }
 
   async deleteUser(id: number): Promise<void> {
@@ -127,7 +108,7 @@ export class UserService implements OnModuleInit {
     const user = await this.userRepository.findOne({
       where: { id },
     });
-    return user ? entityToModel(user) : null;
+    return user;
   }
 
   createToken(payload: JwtPayload): string {

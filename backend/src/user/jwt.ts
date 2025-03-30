@@ -5,7 +5,6 @@ import {
   UnauthorizedException,
   Type,
   mixin,
-  createParamDecorator,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 
@@ -52,4 +51,10 @@ export function AuthGuard(requiredRoles?: string[]): Type<CanActivate> {
   }
 
   return mixin(AuthGuardMixin);
+}
+
+export interface JwtPayload {
+  id: number;
+  username: string;
+  roles: string[];
 }

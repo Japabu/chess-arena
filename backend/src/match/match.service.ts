@@ -4,7 +4,7 @@ import { Repository, UpdateResult } from 'typeorm';
 import { Match, MatchStatus } from './match.entity';
 import { Chess } from 'chess.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { User } from '../user/user.service';
+import { User } from '../user/user.entity';
 
 export interface MatchUpdateEvent {
   matchId: number;

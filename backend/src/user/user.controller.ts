@@ -14,7 +14,7 @@ import {
 import { UserService } from './user.service';
 import { AuthGuard } from './jwt';
 import { IsString, IsNotEmpty } from 'class-validator';
-import { User } from './user.service';
+import { User } from './user.entity';
 
 export interface UserResponse {
   id: number;

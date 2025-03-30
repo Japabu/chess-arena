@@ -6,7 +6,6 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
-import { TournamentEntity } from '../tournament/tournament.entity';
 import { User } from 'src/user/user.entity';
 
 export enum MatchStatus {

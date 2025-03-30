@@ -4,13 +4,8 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
-  ManyToMany,
-  JoinTable,
-  ManyToOne,
   OneToOne,
 } from 'typeorm';
-import { User } from '../user/user.entity';
 import { Match } from '../match/match.entity';
 
 export enum TournamentStatus {
