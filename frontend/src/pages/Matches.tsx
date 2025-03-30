@@ -136,11 +136,11 @@ const Matches: Component = () => {
         id: matchId,
         black: {
           id: match.player2?.id || 0,
-          username: match.player2?.name || 'Unknown'
+          username: match.player2?.username || 'Unknown'
         },
         white: {
           id: match.player1?.id || 0,
-          username: match.player1?.name || 'Unknown'
+          username: match.player1?.username || 'Unknown'
         },
         fen: (match as any).fen || '',  // Not in TournamentMatch type, cast as any
         createdAt: (match as any).createdAt || new Date().toISOString(),  // Not in TournamentMatch type, cast as any

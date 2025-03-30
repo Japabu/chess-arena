@@ -1,16 +1,14 @@
 import type { User } from "./types";
 import { API_URL } from "./config";
 
-/**
- * Service for user-related API operations
- */
+export interface GetUsersResponse {
+  users: User[];
+}
+
 export class UserService {
   private static baseUrl = API_URL;
 
-  /**
-   * Get all users (admin only)
-   */
-  static async getAllUsers(): Promise<User[]> {
+  static async getAllUsers(): Promise<GetUsersResponse> {
     const token = localStorage.getItem("token");
     const response = await fetch(`${this.baseUrl}/admin/users`, {
       headers: {

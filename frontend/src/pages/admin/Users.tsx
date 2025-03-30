@@ -6,7 +6,7 @@ const Users: Component = () => {
   const [users, setUsers] = createSignal<User[]>([]);
   
   onMount(async () => {
-      setUsers(await UserService.getAllUsers());
+      setUsers((await UserService.getAllUsers()).users);
   });
   
   const handleDeleteUser = async (userId: number) => {
@@ -48,7 +48,7 @@ const Users: Component = () => {
                       <input type="checkbox" />
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="text-gray-900 dark:text-white">{user.name}</span>
+                      <span class="text-gray-900 dark:text-white">{user.username}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">{user.id}</td>
                     <td class="px-6 py-4 whitespace-nowrap">{formatDate(user.createdAt)}</td>

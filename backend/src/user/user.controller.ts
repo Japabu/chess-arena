@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
+  GetUsersResponse,
   LoginRequest,
   LoginResponse,
   RegisterUserRequest,
@@ -65,8 +66,17 @@ export class UserAdminController {
   constructor(private userService: UserService) {}
 
   @Get()
-  async getUsers(): Promise<User[]> {
-    return this.userService.findAll();
+  async getUsers(): Promise<GetUsersResponse> {
+    return new GetUsersResponse(
+      (await this.userService.findAll()).map(
+        (user) =>
+          new UserResponse(
+            user.id,
+            user.username,
+            user.createdAt.toISOString(),
+          ),
+      ),
+    );
   }
 
   @Delete(':id')

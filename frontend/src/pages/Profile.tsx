@@ -1,20 +1,13 @@
 import { Component, createSignal, createEffect } from 'solid-js';
 import { useNavigate, useParams } from '@solidjs/router';
-import { UserService } from '../services';
+import { User, UserService } from '../services';
 import { AuthStore } from '../services/auth.store';
-import { User as ApiUser } from '../services/api/types';
-
-interface UserProfile extends ApiUser {
-  username: string;
-  createdAt?: string;
-}
 
 const Profile: Component = () => {
   const navigate = useNavigate();
   const params = useParams();
-  const [userData, setUserData] = createSignal<UserProfile>({
+  const [userData, setUserData] = createSignal<User>({
     id: 0,
-    name: '',
     username: '',
     createdAt: '',
   });
@@ -32,7 +25,7 @@ const Profile: Component = () => {
     
     setUserData({
       ...user,
-      username: user.name || '',
+      username: user.username || '',
     });
     
     setIsLoading(false);
@@ -49,7 +42,7 @@ const Profile: Component = () => {
   };
 
   const getInitial = () => {
-    const name = userData().name || '';
+    const name = userData().username || '';
     return name.charAt(0).toUpperCase() || '?';
   };
 
@@ -72,7 +65,7 @@ const Profile: Component = () => {
                 {getInitial()}
               </div>
               <div>
-                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">{userData().name || 'Unknown User'}</h2>
+                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">{userData().username || 'Unknown User'}</h2>
                 <p class="text-gray-600 dark:text-gray-400">User ID: {userData().id}</p>
               </div>
             </div>
@@ -83,7 +76,7 @@ const Profile: Component = () => {
               <div class="space-y-4">
                 <div>
                   <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Username</h3>
-                  <p class="mt-1 text-gray-900 dark:text-white">{userData().name}</p>
+                  <p class="mt-1 text-gray-900 dark:text-white">{userData().username}</p>
                 </div>
                 
                 <div>
