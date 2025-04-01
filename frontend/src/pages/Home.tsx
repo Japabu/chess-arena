@@ -19,7 +19,7 @@ const Home: Component = () => {
                 href="/register" 
                 class="px-6 py-3 rounded-md text-white bg-indigo-600 hover:bg-indigo-700 font-medium shadow-md transition-colors duration-200"
               >
-                Register Your Bot
+                Register
               </A>
               <A 
                 href="/tournaments" 
