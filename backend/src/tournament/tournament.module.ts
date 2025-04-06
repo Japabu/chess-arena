@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TournamentEntity } from './tournament.entity';
 import { TournamentService } from './tournament.service';
 import { TournamentController } from './tournament.controller';
-import { Match } from '../match/match.entity';
-import { MatchModule } from '../match/match.module';
-import { UserModule } from '../user/user.module';
+import { Match } from '../matches/match.entity';
+import { MatchModule } from '../matches/match.module';
+import { UserModule } from '../users/user.module';
 
 @Module({
   imports: [

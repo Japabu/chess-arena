@@ -2,7 +2,7 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { TournamentStatus } from '../src/tournament/tournament.service';
 import { io, Socket } from 'socket.io-client';
-import { MatchStatus } from '../src/match/match.service';
+import { MatchStatus } from '../src/matches/match.service';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { TestingModule, Test } from '@nestjs/testing';
 

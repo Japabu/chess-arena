@@ -103,14 +103,14 @@ const Users: Component = () => {
         
         <div class="flex gap-2">
           <button 
-            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors"
             onClick={fetchUsers}
           >
             Refresh
           </button>
           <Show when={selectedUsers().length > 0}>
             <button 
-              class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-500 transition-colors"
               onClick={handleBulkDelete}
               disabled={isLoading()}
             >
@@ -144,15 +144,14 @@ const Users: Component = () => {
                   />
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Registered</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-200 uppercase tracking-wider">ID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-200 uppercase tracking-wider">Registered</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
               <For each={users()}>
                 {(user) => (
-                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-750">
+                  <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
                     <td class="px-6 py-4 whitespace-nowrap">
                       <input 
                         type="checkbox" 
@@ -164,16 +163,8 @@ const Users: Component = () => {
                     <td class="px-6 py-4 whitespace-nowrap">
                       <span class="text-gray-900 dark:text-white">{user.username}</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">{user.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">{formatDate(user.createdAt)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <button 
-                        class="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-200">{user.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-200">{formatDate(user.createdAt)}</td>
                   </tr>
                 )}
               </For>

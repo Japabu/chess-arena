@@ -10,9 +10,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UserService } from '../user/user.service';
-import { MatchService, MatchUpdateEvent } from '../match/match.service';
-import { JwtPayload } from '../user/jwt';
+import { UserService } from '../users/user.service';
+import { MatchService, MatchUpdateEvent } from '../matches/match.service';
+import { JwtPayload } from '../users/jwt';
 
 interface MoveRequest {
   matchId: number;

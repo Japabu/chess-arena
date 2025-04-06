@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
-import { User } from 'src/user/user.entity';
+import { User } from 'src/users/user.entity';
 
 export enum MatchStatus {
   PENDING = 'pending',

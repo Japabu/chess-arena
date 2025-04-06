@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToOne,
 } from 'typeorm';
-import { Match } from '../match/match.entity';
+import { Match } from '../matches/match.entity';
 
 export enum TournamentStatus {
   OPEN = 'open',

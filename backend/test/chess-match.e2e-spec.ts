@@ -4,9 +4,9 @@ import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { io } from 'socket.io-client';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Match } from '../src/match/match.entity';
+import { Match } from '../src/matches/match.entity';
 import { Repository } from 'typeorm';
-import { User } from '../src/user/user.entity';
+import { User } from '../src/users/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 describe('Chess Match with Players (e2e)', () => {

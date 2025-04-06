@@ -18,25 +18,9 @@ export class UserService {
     return response.json();
   }
 
-  /**
-   * Get current authenticated user
-   */
-  static async getCurrentUser(): Promise<User> {
-    const claims = this.getUserClaims();
-
-    if (!claims || !claims.id) {
-      throw new Error("User not authenticated");
-    }
-
-    return this.getUserById(claims.id);
-  }
-
-  /**
-   * Get user by ID
-   */
   static async getUserById(userId: number): Promise<User> {
     const token = localStorage.getItem("token");
-    const response = await fetch(`${this.baseUrl}/user/${userId}`, {
+    const response = await fetch(`${this.baseUrl}/users/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -44,28 +28,6 @@ export class UserService {
     return response.json();
   }
 
-  /**
-   * Update an existing user
-   */
-  static async updateUser(
-    userId: number,
-    userData: Partial<User>
-  ): Promise<User> {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${this.baseUrl}/user/${userId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(userData),
-    });
-    return response.json();
-  }
-
-  /**
-   * Delete a user (admin only)
-   */
   static async deleteUser(userId: number): Promise<void> {
     const token = localStorage.getItem("token");
     await fetch(`${this.baseUrl}/admin/users/${userId}`, {
@@ -76,9 +38,6 @@ export class UserService {
     });
   }
 
-  /**
-   * Bulk delete multiple users (admin only)
-   */
   static async bulkDeleteUsers(userIds: number[]): Promise<void> {
     const token = localStorage.getItem("token");
     await fetch(`${this.baseUrl}/admin/users/bulk-delete`, {
@@ -91,14 +50,11 @@ export class UserService {
     });
   }
 
-  /**
-   * Login a user
-   */
   static async login(
     username: string,
     password: string
   ): Promise<{ access_token: string }> {
-    const response = await fetch(`${this.baseUrl}/user/login`, {
+    const response = await fetch(`${this.baseUrl}/users/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -108,26 +64,16 @@ export class UserService {
     return response.json();
   }
 
-  /**
-   * Register a new user
-   */
-  static async register(
-    username: string,
-    password: string
-  ): Promise<{ id: number; username: string }> {
-    const response = await fetch(`${this.baseUrl}/user/register`, {
+  static async register(username: string, password: string): Promise<void> {
+    await fetch(`${this.baseUrl}/users/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ username, password }),
     });
-    return response.json();
   }
 
-  /**
-   * Get user claims from token
-   */
   static getUserClaims(): {
     id: number;
     username: string;
@@ -146,17 +92,11 @@ export class UserService {
     }
   }
 
-  /**
-   * Check if the current user has a specific role
-   */
   static hasRole(role: string): boolean {
     const claims = this.getUserClaims();
     return claims?.roles?.includes(role) || false;
   }
 
-  /**
-   * Check if the current user is an admin
-   */
   static isAdmin(): boolean {
     return this.hasRole("admin");
   }

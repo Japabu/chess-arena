@@ -8,9 +8,9 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { UserResponse, userToResponse } from '../user/user.controller';
-import { UserService } from '../user/user.service';
-import { AuthGuard } from '../user/jwt';
+import { UserResponse, userToResponse } from '../users/user.controller';
+import { UserService } from '../users/user.service';
+import { AuthGuard } from '../users/jwt';
 import { MatchStatus, Match } from './match.entity';
 import { MatchService } from './match.service';
 
@@ -40,7 +40,7 @@ const matchToResponse = (match: Match): MatchResponse => {
 };
 
 @Controller('matches')
-export class MatchController {
+export class MatchesController {
   constructor(private readonly matchService: MatchService) {}
 
   @Get()
@@ -64,7 +64,7 @@ export class MatchController {
 
 @UseGuards(AuthGuard(['admin']))
 @Controller('admin/matches')
-export class MatchAdminController {
+export class AdminMatchesController {
   constructor(
     private readonly matchService: MatchService,
     private readonly userService: UserService,

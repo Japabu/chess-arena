@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { TournamentService } from './tournament.service';
 import { TournamentEntity, TournamentStatus } from './tournament.entity';
-import { AuthGuard } from '../user/jwt';
+import { AuthGuard } from '../users/jwt';
 
 export interface TournamentResponse {
   id: number;

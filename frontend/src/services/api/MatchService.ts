@@ -1,9 +1,11 @@
 import type { TournamentMatch } from "./types";
 import { API_URL } from "./config";
 
-/**
- * Service for match-related API operations
- */
+interface MatchRequest {
+  white: { id: number };
+  black: { id: number };
+}
+
 export class MatchService {
   private static baseUrl = API_URL;
 
@@ -11,58 +13,17 @@ export class MatchService {
    * Get all matches
    */
   static async getAllMatches(): Promise<TournamentMatch[]> {
-    const response = await fetch(`${this.baseUrl}/match`);
-    return response.json();
-  }
-
-  /**
-   * Get match by ID
-   */
-  static async getMatchById(matchId: number): Promise<TournamentMatch> {
-    const response = await fetch(`${this.baseUrl}/match/${matchId}`);
-    return response.json();
-  }
-
-  /**
-   * Get matches by tournament ID
-   */
-  static async getMatchesByTournament(
-    tournamentId: number
-  ): Promise<TournamentMatch[]> {
-    const response = await fetch(
-      `${this.baseUrl}/tournaments/${tournamentId}/matches`
-    );
+    const response = await fetch(`${this.baseUrl}/matches`);
     return response.json();
   }
 
   /**
    * Create a new match (admin only)
    */
-  static async createMatch(
-    matchData: Partial<TournamentMatch>
-  ): Promise<TournamentMatch> {
+  static async createMatch(matchData: MatchRequest): Promise<TournamentMatch> {
     const token = localStorage.getItem("token");
-    const response = await fetch(`${this.baseUrl}/match`, {
+    const response = await fetch(`${this.baseUrl}/admin/matches`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(matchData),
-    });
-    return response.json();
-  }
-
-  /**
-   * Update an existing match
-   */
-  static async updateMatch(
-    matchId: number,
-    matchData: Partial<TournamentMatch>
-  ): Promise<TournamentMatch> {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${this.baseUrl}/match/${matchId}`, {
-      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -77,7 +38,7 @@ export class MatchService {
    */
   static async deleteMatch(matchId: number): Promise<void> {
     const token = localStorage.getItem("token");
-    await fetch(`${this.baseUrl}/match/${matchId}`, {
+    await fetch(`${this.baseUrl}/matches/${matchId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
