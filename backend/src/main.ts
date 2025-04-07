@@ -8,6 +8,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
+  // Set global prefix for API routes
+  app.setGlobalPrefix('api');
+
   // Enable CORS for the frontend
   const frontendUrl = configService.getOrThrow<string>('FRONTEND_URL');
   app.enableCors({

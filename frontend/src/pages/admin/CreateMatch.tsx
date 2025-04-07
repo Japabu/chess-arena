@@ -9,8 +9,8 @@ const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const CreateMatch: Component = () => {
   const navigate = useNavigate();
   const [users, setUsers] = createSignal<User[]>([]);
-  const [whiteId, setWhiteId] = createSignal<number | null>(null);
-  const [blackId, setBlackId] = createSignal<number | null>(null);
+  const [whiteId, setWhiteId] = createSignal<number>(0);
+  const [blackId, setBlackId] = createSignal<number>(0);
   const [fen, setFen] = createSignal(INITIAL_FEN);
   const [useCustomFen, setUseCustomFen] = createSignal(false);
   const [isLoading, setIsLoading] = createSignal(false);
@@ -43,15 +43,11 @@ const CreateMatch: Component = () => {
     }
     
     setIsLoading(true);
-    
-    const whitePlayer = users().find(user => user.id === whiteId());
-    const blackPlayer = users().find(user => user.id === blackId());
+  
     
     await MatchService.createMatch({
-      matchNumber: 0, // This will be assigned by the backend
-      player1: whitePlayer,
-      player2: blackPlayer,
-      status: 'pending'
+      white: { id: whiteId() },
+      black: { id: blackId() }
     });
     
     navigate('/admin/matches');

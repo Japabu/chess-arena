@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { WebSocketModule } from './websocket/websocket.module';
 import { MatchModule } from './matches/match.module';
 import { UserModule } from './users/user.module';
@@ -23,14 +25,17 @@ import { TournamentEntity as TournamentEntity } from './tournament/tournament.en
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.getOrThrow<string>('DB_HOST'),
-        port: configService.getOrThrow<number>('DB_PORT'),
-        username: configService.getOrThrow<string>('DB_USERNAME'),
-        password: configService.getOrThrow<string>('DB_PASSWORD'),
-        database: configService.getOrThrow<string>('DB_NAME'),
+        url: configService.getOrThrow<string>('POSTGRES_URL'),
         entities: [Match, User, TournamentEntity],
-        synchronize: configService.getOrThrow('NODE_ENV') !== 'production',
+        synchronize: true,
       }),
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, 'public'),
+      exclude: ['/api{*splat}'],
+      serveStaticOptions: {
+        fallthrough: true,
+      },
     }),
     ScheduleModule.forRoot(),
     WebSocketModule,

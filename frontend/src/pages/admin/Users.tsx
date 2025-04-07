@@ -28,25 +28,6 @@ const Users: Component = () => {
     }
   };
   
-  const handleDeleteUser = async (userId: number) => {
-    if (!confirm('Are you sure?')) return;
-    
-    setIsLoading(true);
-    setError('');
-    try {
-      await UserService.deleteUser(userId);
-      setUsers(prev => prev.filter(user => user.id !== userId));
-      setDeleteSuccess('User deleted successfully');
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setDeleteSuccess(''), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete user');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
   const handleSelectUser = (userId: number, checked: boolean) => {
     if (checked) {
       setSelectedUsers(prev => [...prev, userId]);
