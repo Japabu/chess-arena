@@ -1,5 +1,6 @@
 import type { User } from "./types";
 import { API_URL } from "./config";
+import { jwtDecode } from "jwt-decode";
 
 export interface GetUsersResponse {
   users: User[];
@@ -84,8 +85,12 @@ export class UserService {
     if (!token) return null;
 
     try {
-      // Extract payload from JWT
-      const payload = JSON.parse(atob(token.split(".")[1]));
+      // Extract payload from JWT using jwt-decode
+      const payload = jwtDecode<{
+        id: number;
+        username: string;
+        roles: string[];
+      }>(token);
       return payload;
     } catch (error) {
       return null;

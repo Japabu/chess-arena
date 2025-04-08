@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.0.17",
     "@types/chess.js": "^0.13.7",
     "chess.js": "^1.1.0",
+    "jwt-decode": "^4.0.0",
     "socket.io-client": "^4.8.1",
     "solid-js": "^1.9.5"
   },
