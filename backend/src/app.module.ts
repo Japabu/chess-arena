@@ -31,7 +31,7 @@ import { TournamentEntity as TournamentEntity } from './tournament/tournament.en
       }),
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, 'public'),
+      rootPath: join(__dirname, '..', 'public'),
       exclude: ['/api{*splat}'],
       serveStaticOptions: {
         fallthrough: true,

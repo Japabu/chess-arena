@@ -1,51 +1,58 @@
-# Stage 1: Build
-FROM node:alpine AS builder
+################################################################################
+# Frontend Build Stage (glibc-based Node image)
+# For ARMv7 support, consider using an ARM-specific image (e.g., arm32v7/node:20-slim)
+################################################################################
+FROM node:20-slim AS frontend-builder
+WORKDIR /app/frontend
 
-WORKDIR /app
+# Install frontend dependencies reproducibly with npm ci
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
 
-# Copy package.json and package-lock.json for caching
-COPY frontend/package.json frontend/package-lock.json ./frontend/
-COPY backend/package.json backend/package-lock.json ./backend/
-
-# Install dependencies
-RUN npm install --prefix frontend && npm install --prefix backend
-
-# Copy the rest of the application code
-COPY frontend/ ./frontend/
-COPY backend/ ./backend/
-
-# Set frontend build time environment variables
+# Copy the source code and build the frontend
+COPY frontend/ ./
 ENV VITE_API_URL=/api
+RUN npm run build
 
-# Build frontend and backend
-RUN npm run build --prefix frontend && npm run build --prefix backend
-
-# Stage 2: Production Image
-FROM node:alpine
-
+################################################################################
+# Backend Build Stage (musl-friendly Node image)
+################################################################################
+FROM node:20-alpine AS backend-builder
 WORKDIR /app/backend
 
-# Copy node_modules from the builder stage
-COPY --from=builder /app/backend/node_modules ./node_modules/
+# Install backend dependencies reproducibly with npm ci
+COPY backend/package.json backend/package-lock.json ./
+RUN npm ci
 
-# Copy built backend artifacts from the builder stage
-COPY --from=builder /app/backend/dist ./
+# Copy backend source and build the backend
+COPY backend/ ./
+RUN npm run build
 
-# Copy built frontend artifacts into the backend/public directory
-COPY --from=builder /app/frontend/dist ./public
+################################################################################
+# Production Stage
+################################################################################
+FROM node:alpine
+WORKDIR /app/backend
 
-# Expose port
+# Copy backend build artifacts and production node_modules
+COPY --from=backend-builder /app/backend/dist ./dist/
+COPY --from=backend-builder /app/backend/node_modules ./node_modules/
+
+# Copy frontend build output into the backend public directory
+COPY --from=frontend-builder /app/frontend/dist ./public/
+
+# Expose the application port
 EXPOSE 3000
 
-# Set backend runtime environment variables
-ENV PORT=3000
-ENV FRONTEND_URL=
-ENV POSTGRES_URL=postgres://postgres:postgres@localhost:5432/chess_arena
-ENV NODE_ENV=production
-ENV ADMIN_USERNAME=admin
-ENV ADMIN_PASSWORD=admin
-ENV JWT_SECRET=stronger-jwt-secret-for-production
-ENV LOG_LEVEL=debug
+# Set runtime environment variables
+ENV PORT=3000 \
+    FRONTEND_URL="" \
+    LOG_LEVEL=debug \
+    POSTGRES_URL="postgres://postgres:postgres@localhost:5432/chess_arena" \
+    NODE_ENV=production \
+    ADMIN_USERNAME=admin \
+    ADMIN_PASSWORD=admin \
+    JWT_SECRET=your-jwt-secret
 
-# Start the application
-CMD ["node", "main.js"]
+# Start the backend application
+CMD ["node", "dist/main.js"]
